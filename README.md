@@ -8,6 +8,10 @@ Follow the [final project lab](https://vsokolov.org/labs/final-project-lab.html)
 
 Alone, or a group of at most three. One person forks. That person adds the other members and `VadimSokolov` as collaborators. On a repository owned by a personal account the role is Write. On the fork, write the names and GitHub usernames under this heading. One person speaks at the presentation. Every member can explain the whole repository.
 
+Team Member 1: Yelena Flanigan; username: lflanigan-sudo
+Team Member 2: Jordan Mason; username: jmason29
+Team Member 3: Anna Kelly; username: TBD
+
 ## Fork
 
 The repository is public, and so is the fork.
@@ -55,6 +59,8 @@ Leave the data files out of git. A file you are allowed to republish goes on the
 ## Tools
 
 R or Python. Use the language you can explain. AI assistants are allowed. On your fork, add one line to this README: what you used, and for what. You are responsible for everything on `main`, including the parts you did not write.
+
+We used ChatGPT and Cursor to assist with data retrieval, cleaning-code development, debugging, and proposal drafting. Team members review the outputs and remain responsible for the submitted work.
 
 ## Files
 
