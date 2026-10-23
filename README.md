@@ -8,6 +8,10 @@ Follow the [final project lab](https://vsokolov.org/labs/final-project-lab.html)
 
 Alone, or a group of at most three. One person forks. That person adds the other members and `VadimSokolov` as collaborators. On a repository owned by a personal account the role is Write. On the fork, write the names and GitHub usernames under this heading. One person speaks at the presentation. Every member can explain the whole repository.
 
+Team Member 1: Yelena Flanigan; username: lflanigan-sudo
+Team Member 2: Jordan Mason; username: TBD
+Team Member 3: Anna Kelly; username: TBD
+
 ## Fork
 
 The repository is public, and so is the fork.
