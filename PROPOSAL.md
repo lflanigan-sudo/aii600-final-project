@@ -1,6 +1,5 @@
 # Proposal
 
-At most one page. Replace the prompts under each heading. Leave the headings.
 
 ## Hypothesis
 
