@@ -10,7 +10,7 @@ Alone, or a group of at most three. One person forks. That person adds the other
 
 Team Member 1: Yelena Flanigan; username: lflanigan-sudo
 Team Member 2: Jordan Mason; username: jmason29
-Team Member 3: Anna Kelly; username: TBD
+Team Member 3: Anna Kelly; username: Akschool26
 
 ## Fork
 
