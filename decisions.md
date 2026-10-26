@@ -5,7 +5,7 @@ This file is the history of the project. Append an entry when a choice changes t
 
 ## 2026-10-26: Prediction target and purchasing decision
 
-Decision. Use realized auction sale price in USD as the prediction target and mean absolute error (MAE) to evaluate performance against a brand-median baseline. Use predictions to screen potential purchases rather than automatically set maximum bids.
+Decision. Use recorded realized auction sale price in USD as the prediction target and mean absolute error (MAE) to evaluate performance against a baseline that predicts each brand’s median sale price calculated from training data only. Use predictions to screen potential purchases rather than automatically set maximum bids.
 
 Why. Completed auction sales provide observable transaction prices. MAE expresses prediction errors in dollars, making them easier to interpret for purchasing decisions. Overestimating a watch's value is more costly because it can lead to overpaying and resale losses.
 
@@ -15,13 +15,15 @@ Revisit. Reconsider the evaluation metric or decision rule if held-out errors ar
 
 ## 2026-10-26: Chronological evaluation strategy
 
-Decision. Propose using sales before January 1, 2024, for training, sales during 2024 for validation, and sales from January 1, 2025, onward for testing.
+Decision. Propose using sales before January 1, 2024, for training, sales during 2024 for validation, and sales from January 1, 2025, onward for testing. These boundaries remain provisional pending partition-count and repeat-watch checks.
 
-Why. The intended use is predicting prices for future auctions. A chronological split better reflects this use than randomly mixing earlier and later sales. Each auction lot will belong to only one partition.
+Why. The intended use is predicting prices for later auctions. Chronological evaluation better reflects this use than randomly mixing earlier and later sales.
 
-Alternative. Use a random 60/20/20 train-validation-test split. This may provide more balanced partitions but does not test performance on later auction periods as directly.
+Preliminary development used a random 60/20/20 training, validation, and test split with seed 20261024. Those assignments and validation results are preserved, and the original final test remains unscored. Some observations in the proposed later periods have already influenced model development through training or validation, so chronological evaluation will not be described as wholly untouched.
 
-Revisit. Confirm the number of observations in each period before finalizing the split. Reconsider the boundaries if the later periods contain too few sales for meaningful evaluation.
+Alternative. Retain the random 60/20/20 split as the primary evaluation. It provides approximately balanced brand representation but measures prediction within the sampled auction population rather than performance on later periods as directly.
+
+Revisit. Before finalizing the chronological split, confirm observation counts by period, brand, and auction house. Specify how confirmed repeat sales of the same physical watch crossing date boundaries will be handled without moving later sales into training. Select boundaries based on the intended use and adequate coverage, not model scores.
 
 ## 2026-10-26: Finalize initial eligible watch sample
 
