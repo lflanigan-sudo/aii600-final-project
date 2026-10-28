@@ -1,5 +1,6 @@
 # Proposal
 
+
 ## Hypothesis
 
 We hypothesize that a regression model using brand, model, approximate watch age, case material, movement type, and other available characteristics will predict realized auction sale prices with lower mean absolute error (MAE) in U.S. dollars than a baseline that predicts each brand’s median sale price, as calculated from our training data. Our target is the realized sale price in U.S. dollars for individual Cartier, Rolex, and Omega wristwatches sold at Sotheby’s and Bonhams, using auction records from 2021–2026 to evaluate predictions for later sales.
