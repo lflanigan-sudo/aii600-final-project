@@ -5,7 +5,7 @@ The files the notebook reads are not committed. When the terms let you republish
 `OWNER/REPO` is your fork, the form `username/aii600-final-project`. In the clone, once:
 
 ```bash
-gh repo set-default OWNER/REPO
+gh repo set-default lflanigan-sudo/aii600-final-project
 ```
 
 Create the release from the project root, after the files are in this folder:
