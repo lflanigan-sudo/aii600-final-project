@@ -2,6 +2,19 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
+## 2026-10-28: Chronological split feasibility and test-set limitations
+
+Decision. Continue evaluating the proposed chronological split: training on 2021–2023 sales (2,490 observations), validation on 2024 sales (802), and testing on 2025–2026 sales (1,370). These counts reflect the proposed exclusion of two earlier sales of confirmed repeat physical watches. The split remains provisional until the team finalizes the evaluation protocol.
+
+Why. Jordan's feasibility check confirmed that all three brands and both auction houses are represented in each period. The smallest brand–auction-house subgroup is Omega at Sotheby's, with 54 validation and 66 test observations. Chronological evaluation better reflects the intended task of predicting prices for later auctions.
+
+Repeat-watch handling. The two proposed exclusions concern confirmed repeat sales of the same physical watch, identified using reference and case-serial evidence. Watches sharing a model reference are not automatically treated as duplicates. The master dataset remains unchanged at 4,664 observations; the proposed experimental dataset contains 4,662.
+
+Test-set limitation. Of the 1,370 proposed chronological test observations, 1,088 were previously included in training or validation during preliminary random-split development. Therefore, the chronological test set cannot be described as completely untouched. We will reserve chronological test scoring until the evaluation approach is finalized and seek Professor Sokolov's guidance on additional safeguards.
+
+Alternative. Continue using the preliminary random 60/20/20 split as the primary evaluation. This preserves the original experiment but is less representative of predicting later auction prices.
+
+Revisit. Reconsider the split or evaluation procedure if prior test exposure compromises the credibility of final performance estimates, repeat-watch handling introduces bias, or chronological performance varies substantially across brands and auction houses.
 
 ## 2026-10-26: Prediction target and purchasing decision
 

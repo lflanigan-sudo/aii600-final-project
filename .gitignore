@@ -21,3 +21,5 @@ data/*
 *.onnx
 wandb/
 mlruns/
+# Keep licensed auction data out of GitHub
+/data/*.csv
