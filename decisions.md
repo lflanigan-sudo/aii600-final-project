@@ -2,6 +2,19 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
+## 2026-10-28: Chronological split feasibility and test-set limitations
+
+**Decision:** Use a chronological data split for the proposed modeling approach, with 2021–2023 observations for training, 2024 for validation, and 2025–2026 for testing, subject to final team confirmation.
+
+**Rationale:** Because the project aims to predict future auction sale prices, a chronological split better represents the intended prediction setting than a random split.
+
+**Evidence:** The proposed chronological split contains 2,490 training observations, 802 validation observations, and 1,370 test observations after excluding two earlier sales of confirmed repeat physical watches.
+
+**Limitation:** During earlier exploratory modeling using a random split, 1,088 observations from the proposed chronological test period had already been used in training or validation. Therefore, the chronological test set cannot be described as completely untouched.
+
+**Alternative considered:** Retaining the original random split or obtaining a genuinely unseen future evaluation sample.
+
+**Next step:** Confirm the chronological split and document prior exposure before reporting final model performance.
 
 ## 2026-10-26: Prediction target and purchasing decision
 
