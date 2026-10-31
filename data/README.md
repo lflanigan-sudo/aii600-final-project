@@ -128,4 +128,4 @@ The following limitations are relevant to the analysis:
 - **Coverage:** The dataset covers only three brands and two auction houses.
 - **Missing information:** Some watch characteristics are incomplete, potentially limiting prediction accuracy.
 - **Price interpretation:** Recorded auction prices may differ from total acquisition or resale costs, which can include buyer's premiums, taxes, shipping, servicing, and resale fees. The precise price definition requires confirmation.
-- **Time period:** The dataset covers historical auction sales and
+- **Time period:** The dataset covers historical auction sales from February 2021 through July 2026. Auction prices may change over time due to market conditions, collector demand, and economic factors. Therefore, models trained on historical data may not predict future auction prices with the same accuracy.
