@@ -65,7 +65,7 @@ To ensure reproducibility, the dataset is identified by its SHA-256 checksum.
 
 **SHA-256:**
 
-`008790f43b08461b27b01cd496d5d2b5c7e8c5214bb609bf5a53579aec21109c`
+`cf3b41d890af1feba9348fa9a73d954fcab193ed890a39044bd0355198fc5a8a`
 
 The notebook verifies this checksum before fitting prediction models.
 
