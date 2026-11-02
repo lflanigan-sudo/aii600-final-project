@@ -52,6 +52,15 @@ from datetime import date, timedelta
 from pathlib import Path
 
 SCRIPT_VERSION = "1"
+PREVIOUS_SCRIPT_SHA256 = "f870d30ab1d25a07ea41e3360af2d67dac84e7aa6b1c89f92d4e7db09ecaf982"
+USAGE_NOTE_SCRIPT_SHA256 = "f6d03df2574350ed37ae13a89d04e886982819d614381d6bcfe28f4df8edd195"
+SCRIPT_HASH_NOTE = (
+    "The assignment and omission files were written by the previous script hash. "
+    f"Revision {USAGE_NOTE_SCRIPT_SHA256} differs from that script only by the usage note "
+    "in the module docstring. This metadata records the current script hash and retains "
+    "the previous hash. The assignment and omission bytes were not rewritten. "
+    "The previous metadata file is chronological_split.json.preserved-f870d30a."
+)
 INPUT_NAME = "expanded_pull_eligible.csv"
 INPUT_SHA256 = "cf3b41d890af1feba9348fa9a73d954fcab193ed890a39044bd0355198fc5a8a"
 VALIDATION_START = date(2024, 1, 1)
@@ -659,6 +668,8 @@ def build_metadata(
         "script": "scripts/split_chronological.py",
         "script_version": SCRIPT_VERSION,
         "script_sha256": sha256_file(Path(__file__).resolve()),
+        "previous_script_sha256": PREVIOUS_SCRIPT_SHA256,
+        "script_hash_note": SCRIPT_HASH_NOTE,
         "input_path": "processed/expanded_pull_eligible.csv",
         "input_sha256": INPUT_SHA256,
         "input_rows": len(by_id),
