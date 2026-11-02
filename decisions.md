@@ -2,6 +2,24 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
+##2026-11-01: Asymmetric loss and quantile regression
+
+Decision. Following Professor Sokolov's feedback in Issue #6, replace MAE as the primary evaluation metric with tilted absolute loss (pinball loss). Fit conditional quantile regression on log-transformed auction prices and convert predictions back to USD for purchasing comparisons.
+
+Why. Overestimating a watch's value is more costly than underestimating it. MAE assigns equal penalties to both errors and therefore does not represent our intended purchasing decision.
+
+Quantile selection. Choose the quantile based on the relative costs of overestimation and underestimation. The team will document and justify the selected cost ratio before fitting the final model.
+
+Baseline. Compare quantile regression with a brand-specific quantile baseline using the same tilted loss. Retain the brand-median baseline as an additional reference if useful.
+
+Evaluation. Preserve the proposed chronological split. Examine residuals by watch model and production year to identify systematic errors or price discontinuities.
+
+Limitations. The dataset contains completed sales only and may not represent watches that failed to sell. The existing test-set exposure limitation also remains.
+
+Alternative. Continue using ordinary regression and MAE. This approach is simpler but does not account for asymmetric purchasing costs.
+
+Revisit. Reconsider the cost ratio, quantile, or model specification if validation results or purchasing assumptions change.
+
 ## 2026-10-28: Chronological split feasibility and test-set limitations
 
 Decision. Continue evaluating the proposed chronological split: training on 2021–2023 sales (2,490 observations), validation on 2024 sales (802), and testing on 2025–2026 sales (1,370). These counts reflect the proposed exclusion of two earlier sales of confirmed repeat physical watches. The split remains provisional until the team finalizes the evaluation protocol.
