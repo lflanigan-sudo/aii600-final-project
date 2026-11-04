@@ -2,6 +2,15 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
+## 2026-11-03: Repair the analysis notebook after the merge
+
+Decision. Restore a valid `analysis.ipynb` from the last notebooks that still parse: `a0399f0` on `lflanigan-sudo` and `b336585` on `main`, whose notebook matches Anna Kelly's `1436bab`. Keep the research question, checksum check, missingness explanation, and figures. Label the 2026-10-26 brand-median comparison under mean absolute error as the earlier plan. The current plan is the 2026-11-01 entry: quantile regression against a brand-specific quantile baseline under tilted absolute loss, with the brand-median baseline retained as an additional reference if useful. The cost ratio and quantile stay pending. This repair does not fit a model, score a partition, or integrate the chronological assignments into the notebook.
+
+Why. Commit `c258d94` merged `main` into `lflanigan-sudo` and left two notebook source strings adjacent without a comma. JSON parsing fails at line 303. That file is the notebook in pull request #7's merge, `e00b2b9`, and in current `origin/main`. Both parents parse. `a0399f0` carries the quantile question. `1436bab` carries the brand-summary prose, the boxplot lead-in, and the cleaned-field missingness explanation. Pull requests #8 and #9 are merged. Their scripts and decision entries are on `main` and did not edit the notebook.
+
+Alternative. Keep one parent and drop the other. That would discard either the quantile question or the brand-median reference and the boxplot lead-in.
+
+Revisit. Revisit the notebook prose if the team selects a cost ratio and quantile, or if a later edit changes the audited missingness explanation.
 
 ## 2026-11-02: Reuse the audited predictor construction
 
