@@ -2,6 +2,37 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
+## 2026-11-07: Audit preliminary description-based data cleaning
+
+Decision. Create a separate cleaned dataset, data/expanded_pull_eligible_cleaned.csv, using the approved expanded_pull_eligible.csv as the source. Preserve all 4,664 records and 212 original columns, and add 66 columns with the suffix _cleaned, corresponding to the existing norm_* fields. Copy existing normalized values and attempt to populate missing values using explicitly labeled information from norm_item_description. Do not overwrite populated normalized values or modify the approved source dataset. Treat the resulting file as preliminary and do not replace the team's approved modeling predictors until validation is complete.
+
+Why. Missing watch specifications may limit auction-price prediction accuracy. Catalogue descriptions contain additional information about watch models, reference numbers, dials, cases, and bracelets that can potentially recover missing predictor values. Retaining separate cleaned columns allows the team to compare the new extraction against the existing normalized and reviewed fields without losing the original information.
+
+Checks. The initial audit found 1,805 newly populated cells across 675 of the 4,664 records (14.5%). Six normalized fields improved:
+
+norm_dial: 650 values recovered.
+
+norm_watch_case: 568 values recovered.
+
+norm_reference: 245 values recovered.
+
+norm_strap_bracelet: 216 values recovered.
+
+norm_dial_color: 78 values recovered.
+
+norm_model: 48 values recovered.
+
+Across these six fields, missing cells decreased from 12,911 to 11,106, a 14.0% reduction. No existing populated normalized values were overwritten. The cleaned dataset contains 278 columns.
+
+Quality issues. The audit identified 667 differences in the original item_provenance column, associated with conversion of the literal string None into blank values during CSV processing. The import process should use keep_default_na=False to preserve these source values. The dial-color extraction also requires review because some colors describe hands, numerals, or markers rather than the dial itself. These issues have been identified but are not yet confirmed as corrected.
+
+Modeling implications. Additional populated fields do not establish that the extracted specifications are accurate or that prediction performance will improve. Continue using the previously approved predictor-construction rules in scripts.predictors, including reviewed case-body and movement decisions. Do not automatically substitute the new _cleaned fields. Any later comparison must use the existing chronological training and validation assignments without changing the split or scoring the reserved test partition.
+
+Alternative. Continue using only the existing normalized and reviewed predictors, leaving missing values unresolved. This avoids introducing extraction errors but may discard useful information available in catalogue descriptions. Automatically replacing existing values with newly extracted specifications was rejected because it could override reviewed corrections and introduce incorrect predictor values.
+
+Revisit. Correct the item_provenance preservation issue, review questionable dial-color extractions, and rerun the quality audit. Compare newly recovered specifications against the existing reviewed fields and document unresolved conflicts. Record the final cleaned-file SHA-256 checksum after corrections. Evaluate whether validated cleaned predictors improve performance on the chronological validation partition before adopting them for modeling. Preserve the approved original dataset and existing chronological assignments throughout.
+
+
 ## 2026-11-04: Integrate the chronological split into the analysis notebook
 
 Decision. Read `processed/expanded_pull_eligible.csv` from `WATCH_DATA_DIR`, keep source fields as strings, and require SHA-256 `cf3b41d890af1feba9348fa9a73d954fcab193ed890a39044bd0355198fc5a8a`. Build the final predictors with `construct_record` from `scripts.predictors`. Take partition membership from the saved chronological assignment and omission files, joined on unique `record_id`, without regenerating or overwriting those files. The active sale-price summary uses the 2,490 chronological training rows. The training-plot cell is written to save `fig/chronological_training_price_boxplot.png` when it is run. That cell has no saved output, and the file is not present. Keep `fig/watch_price_boxplot.png` as the preserved full-sample figure and do not regenerate it. Keep the earlier full-sample medians and catalogue missingness as historical description. Do not fit a model, generate predictions, or score validation or test.
