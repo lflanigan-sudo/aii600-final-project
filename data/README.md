@@ -129,3 +129,108 @@ The following limitations are relevant to the analysis:
 - **Missing information:** Some watch characteristics are incomplete, potentially limiting prediction accuracy.
 - **Price interpretation:** Recorded auction prices may differ from total acquisition or resale costs, which can include buyer's premiums, taxes, shipping, servicing, and resale fees. The precise price definition requires confirmation.
 - **Time period:** The dataset covers historical auction sales from February 2021 through July 2026. Auction prices may change over time due to market conditions, collector demand, and economic factors. Therefore, models trained on historical data may not predict future auction prices with the same accuracy.
+
+## 7. Description-Based Data Cleaning and Quality Audit
+
+### 7.1 Objective
+
+To improve data completeness for luxury-watch auction price prediction, we developed a Python cleaning process that uses information from auction catalogue descriptions to recover missing watch specifications.
+
+The process preserves the original dataset and creates a separate cleaned CSV. Existing normalized values are retained, and missing values are populated only when recognizable supporting information is available in `norm_item_description`.
+
+### 7.2 Cleaning Methodology
+
+The original dataset contains 4,664 auction records and 212 columns, including 66 normalized columns identified by the `norm_` prefix.
+
+The cleaning process:
+
+1. Verifies the original CSV against its approved SHA-256 checksum.
+2. Preserves all 212 original columns.
+3. Creates 66 additional columns using the naming convention `norm_<field>_cleaned`.
+4. Copies existing normalized values into the corresponding cleaned columns.
+5. Attempts to recover missing specifications from `norm_item_description` using rule-based text extraction.
+6. Does not overwrite existing populated normalized values.
+7. Saves the results to a new CSV without modifying the original dataset.
+
+The extraction targets explicitly identifiable specifications, including watch model, reference number, movement, production year, dial information, case descriptions, and bracelet or strap information.
+
+Ambiguous or unsupported information is not intentionally imputed.
+
+### 7.3 Cleaned Dataset
+
+| Property | Original Dataset | Cleaned Dataset |
+|---|---|---|
+| Filename | `expanded_pull_eligible.csv` | `expanded_pull_eligible_cleaned.csv` |
+| Local directory | `data/` | `data/` |
+| Records | 4,664 | 4,664 |
+| Original columns | 212 | 212 |
+| Additional cleaned columns | 0 | 66 |
+| Total columns | 212 | 278 |
+| Original normalized values overwritten | — | 0 |
+
+The cleaned dataset retains the original information and adds separate cleaned fields for analysis. The original file remains the approved source dataset.
+
+### 7.4 Missing-Data Improvements
+
+An initial audit of the cleaned dataset identified 1,805 newly populated cells across 675 auction records.
+
+| Normalized Field | Missing Before | Missing After | Values Recovered |
+|---|---:|---:|---:|
+| `norm_dial` | 3,123 | 2,473 | 650 |
+| `norm_watch_case` | 3,123 | 2,555 | 568 |
+| `norm_reference` | 1,192 | 947 | 245 |
+| `norm_strap_bracelet` | 3,146 | 2,930 | 216 |
+| `norm_dial_color` | 1,766 | 1,688 | 78 |
+| `norm_model` | 561 | 513 | 48 |
+| **Total** | **12,911** | **11,106** | **1,805** |
+
+The six improved fields experienced a combined 14.0% reduction in missing cells.
+
+Of the 4,664 auction records, 675 (14.5%) received at least one newly populated field.
+
+These results measure improved completeness, not necessarily improved prediction accuracy.
+
+### 7.5 Data Integrity and Quality Review
+
+The cleaning process was evaluated using a Python quality-audit section in `analysis.ipynb`.
+
+The audit checks:
+
+- Missing values before and after cleaning across all 66 normalized fields.
+- Number of recovered values by field.
+- Number of auction records with newly populated information.
+- Whether previously populated normalized values were overwritten or removed.
+- Whether the original 212 columns were preserved.
+- Potentially incorrect dial-color extractions.
+
+The initial audit confirmed that existing populated normalized values were not overwritten.
+
+However, it identified two issues requiring correction or review:
+
+**Original-value preservation:** The initial cleaned export contained 667 differences in `item_provenance`, associated with the handling of the literal string `None` during CSV import and export. The loading process should use `keep_default_na=False` to preserve these source values.
+
+**Dial-color extraction:** Some extracted colors may describe watch hands, numerals, or markers rather than the dial itself. These additions require additional validation.
+
+The initial cleaned dataset should therefore be treated as a preliminary output rather than a fully validated modeling dataset.
+
+### 7.6 Modeling Implications
+
+The additional cleaned columns provide candidate predictors for the watch-price prediction models. They are not automatically included in model training.
+
+Predictor selection will consider information available before the auction purchase decision, missingness, extraction reliability, and validation performance.
+
+The realized auction sale price remains the prediction target and is not used as an input predictor.
+
+The team will evaluate whether the additional cleaned specifications improve predictive performance relative to a simpler baseline. Any statistical imputation or preprocessing parameters learned from data will be fitted on the training partition only.
+
+### 7.7 Data Confidentiality and Reproducibility
+
+The original and cleaned datasets are proprietary project data and are not distributed through the public GitHub repository.
+
+Both files are maintained in the authorized project storage environment.
+
+The notebook displays aggregate cleaning statistics and charts rather than individual auction records or catalogue descriptions.
+
+The original dataset is verified using its approved SHA-256 fingerprint. The cleaned CSV receives its own SHA-256 fingerprint after generation.
+
+The cleaned dataset's fingerprint should be recorded once the quality-review corrections have been completed and the final file has been approved.
