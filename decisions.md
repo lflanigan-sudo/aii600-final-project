@@ -2,6 +2,17 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
+## 2026-11-08: Asymmetric loss and quantile regression
+
+Decision. Use a 2:1 cost ratio for overestimating versus underestimating luxury watch auction prices. Fit quantile regression at τ = 1/3 (approximately 0.333) on log sale price. Evaluate predictions in USD using asymmetric pinball loss on the chronological validation set.
+
+Why. The model supports watch acquisition screening, where overestimating resale value can lead to paying too much, while underestimating value may result in a missed opportunity. With overestimation costing twice as much as underestimation, the appropriate target is the 33rd conditional percentile rather than the mean or median. This produces more conservative price estimates.
+
+Alternative. Use ordinary least squares or median regression with equal error costs. These approaches are simpler but do not directly reflect the team's assumed asymmetric acquisition risk. A dollar-price quantile model is another reasonable alternative because fitting on log prices does not directly minimize dollar-scale pinball loss.
+
+Revisit. Reconsider the 2:1 cost ratio if actual acquisition costs suggest a different relationship between overestimation and underestimation. Compare the quantile model against the existing brand-median baseline and a brand-level 33rd-percentile baseline using 2024 validation data. Reconsider the modeling approach if validation loss, calibration, or residual diagnostics indicate poor performance.
+
+
 ## 2026-11-07: Audit preliminary description-based data cleaning
 
 Decision. Create a separate cleaned dataset, data/expanded_pull_eligible_cleaned.csv, using the approved expanded_pull_eligible.csv as the source. Preserve all 4,664 records and 212 original columns, and add 66 columns with the suffix _cleaned, corresponding to the existing norm_* fields. Copy existing normalized values and attempt to populate missing values using explicitly labeled information from norm_item_description. Do not overwrite populated normalized values or modify the approved source dataset. Treat the resulting file as preliminary and do not replace the team's approved modeling predictors until validation is complete.
