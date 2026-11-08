@@ -2,15 +2,34 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
-## 2026-11-08: Asymmetric loss and quantile regression
 
-Decision. Use a 2:1 cost ratio for overestimating versus underestimating luxury watch auction prices. Fit quantile regression at τ = 1/3 (approximately 0.333) on log sale price. Evaluate predictions in USD using asymmetric pinball loss on the chronological validation set.
+## 2026-11-07: Asymmetric loss and quantile regression
+
+Decision. Use a 2:1 cost ratio for overestimating versus underestimating luxury watch auction prices. Fit regularized quantile regression at τ = 1/3 (approximately 0.333) on log sale price. Evaluate predictions in USD using asymmetric pinball loss on the chronological validation set.
 
 Why. The model supports watch acquisition screening, where overestimating resale value can lead to paying too much, while underestimating value may result in a missed opportunity. With overestimation costing twice as much as underestimation, the appropriate target is the 33rd conditional percentile rather than the mean or median. This produces more conservative price estimates.
 
-Alternative. Use ordinary least squares or median regression with equal error costs. These approaches are simpler but do not directly reflect the team's assumed asymmetric acquisition risk. A dollar-price quantile model is another reasonable alternative because fitting on log prices does not directly minimize dollar-scale pinball loss.
+On the 2024 validation set (802 records), the model achieved a dollar-scale pinball loss of $3,975.74, improving 12.05% over the brand-median baseline ($4,520.62) and 9.25% over the brand-specific 33rd-percentile baseline ($4,380.90).
 
-Revisit. Reconsider the 2:1 cost ratio if actual acquisition costs suggest a different relationship between overestimation and underestimation. Compare the quantile model against the existing brand-median baseline and a brand-level 33rd-percentile baseline using 2024 validation data. Reconsider the modeling approach if validation loss, calibration, or residual diagnostics indicate poor performance.
+Alternative. Use ordinary least squares or median regression with equal error costs. These approaches are simpler but do not directly reflect the team's assumed asymmetric acquisition risk. A brand-specific 33rd-percentile baseline is a simpler alternative that directly targets the chosen quantile. A dollar-price quantile model is also reasonable because fitting on log prices does not directly minimize dollar-scale pinball loss.
+
+Checks. The three quantile models use independent preprocessing pipelines. No quantile crossings were observed across the 802 validation records.
+
+Overall, 30.42% of actual prices fell below the predicted 33rd percentile, compared with the nominal target of 33.33%. The estimated 10th–90th percentile intervals achieved 76.81% coverage, slightly below the nominal 80%.
+
+Brand-level calibration differed substantially:
+
+Cartier: 19.94% below q33; 81.01% interval coverage.
+
+Omega: 43.35% below q33; 65.52% interval coverage.
+
+Rolex: 32.86% below q33; 80.21% interval coverage.
+
+These results indicate that improvements in aggregate validation loss do not guarantee reliable calibration for every brand.
+
+Revisit. Reconsider the 2:1 cost ratio if actual acquisition costs suggest a different relationship between overestimation and underestimation. Reevaluate the model if brand-specific calibration remains poor, particularly for Omega, or if future chronological evaluation fails to show an improvement over the brand-specific 33rd-percentile baseline.
+
+Investigate whether alternative specifications, including dollar-price quantile regression or brand-specific models, improve calibration and decision performance without introducing excessive complexity. Preserve the reserved test partition for final evaluation, while acknowledging that some test records were exposed during earlier model development.
 
 
 ## 2026-11-07: Audit preliminary description-based data cleaning
