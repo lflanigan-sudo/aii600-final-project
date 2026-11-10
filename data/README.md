@@ -77,7 +77,7 @@ from pathlib import Path
 
 data_path = Path("data/expanded_pull_eligible.csv")
 
-expected_sha256 = "008790f43b08461b27b01cd496d5d2b5c7e8c5214bb609bf5a53579aec21109c"
+expected_sha256 = "cf3b41d890af1feba9348fa9a73d954fcab193ed890a39044bd0355198fc5a8a"
 
 actual_sha256 = hashlib.sha256(data_path.read_bytes()).hexdigest()
 
@@ -170,9 +170,10 @@ Ambiguous or unsupported information is not intentionally imputed.
 
 The cleaned dataset retains the original information and adds separate cleaned fields for analysis. The original file remains the approved source dataset.
 
+
 ### 7.4 Missing-Data Improvements
 
-An initial audit of the cleaned dataset identified 1,805 newly populated cells across 675 auction records.
+The revised conservative cleaning procedure recovered 1,734 missing values across six normalized fields.
 
 | Normalized Field | Missing Before | Missing After | Values Recovered |
 |---|---:|---:|---:|
@@ -180,38 +181,39 @@ An initial audit of the cleaned dataset identified 1,805 newly populated cells a
 | `norm_watch_case` | 3,123 | 2,555 | 568 |
 | `norm_reference` | 1,192 | 947 | 245 |
 | `norm_strap_bracelet` | 3,146 | 2,930 | 216 |
-| `norm_dial_color` | 1,766 | 1,688 | 78 |
+| `norm_dial_color` | 1,766 | 1,759 | 7 |
 | `norm_model` | 561 | 513 | 48 |
-| **Total** | **12,911** | **11,106** | **1,805** |
+| **Total** | **12,911** | **11,177** | **1,734** |
 
-The six improved fields experienced a combined 14.0% reduction in missing cells.
+The six improved fields experienced a combined 13.43% relative reduction in missing values.
 
-Of the 4,664 auction records, 675 (14.5%) received at least one newly populated field.
+Of 4,664 auction records, 664 (14.24%) received at least one newly populated field.
 
-These results measure improved completeness, not necessarily improved prediction accuracy.
+Across all 66 normalized fields, missingness decreased by 1.35%.
+
+These results describe improved data completeness, not demonstrated improvements in predictive accuracy. The new enrichment fields are not used in the current fitted regression.
+
+
 
 ### 7.5 Data Integrity and Quality Review
 
-The cleaning process was evaluated using a Python quality-audit section in `analysis.ipynb`.
+The revised cleaning process was evaluated using the quality-audit section in `analysis.ipynb`.
 
-The audit checks:
+The audit confirmed:
 
-- Missing values before and after cleaning across all 66 normalized fields.
-- Number of recovered values by field.
-- Number of auction records with newly populated information.
-- Whether previously populated normalized values were overwritten or removed.
-- Whether the original 212 columns were preserved.
-- Potentially incorrect dial-color extractions.
+- All 4,664 original records were preserved.
+- All 212 original columns were preserved without modification.
+- All 667 literal `None` values in `item_provenance` were preserved.
+- No existing normalized values were overwritten.
+- The candidate contains 66 additional cleaned columns, for 278 columns total.
+- The saved candidate file was checked against its generated SHA-256 checksum.
 
-The initial audit confirmed that existing populated normalized values were not overwritten.
+The extraction rules were made more conservative to reduce the risk of confusing dial colors with hands or markers and primary case materials with bezel or case-back materials.
 
-However, it identified two issues requiring correction or review:
+The seven newly recovered dial colors and the recovered case-material values still require manual semantic validation. Ambiguous extractions should remain missing.
 
-**Original-value preservation:** The initial cleaned export contained 667 differences in `item_provenance`, associated with the handling of the literal string `None` during CSV import and export. The loading process should use `keep_default_na=False` to preserve these source values.
+The cleaned dataset remains a candidate and is not used in the current fitted regression.
 
-**Dial-color extraction:** Some extracted colors may describe watch hands, numerals, or markers rather than the dial itself. These additions require additional validation.
-
-The initial cleaned dataset should therefore be treated as a preliminary output rather than a fully validated modeling dataset.
 
 ### 7.6 Modeling Implications
 
@@ -233,4 +235,11 @@ The notebook displays aggregate cleaning statistics and charts rather than indiv
 
 The original dataset is verified using its approved SHA-256 fingerprint. The cleaned CSV receives its own SHA-256 fingerprint after generation.
 
-The cleaned dataset's fingerprint should be recorded once the quality-review corrections have been completed and the final file has been approved.
+The separate candidate file is
+`expanded_pull_eligible_cleaned.csv`.
+
+**Candidate SHA-256:**
+
+`74bf8efd5279afc4b59013618063c78292c166c491b922bdaf3db6e347ac9824`
+
+This fingerprint identifies the revised candidate generated and audited in the notebook. It does not indicate that the enrichment has been approved for modeling.
