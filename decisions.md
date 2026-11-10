@@ -2,6 +2,30 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
+## 2026-11-09 — Model Validation, Screening Policy, and Retrospective Evaluation
+
+Decision: Retain quantile regression at the 33rd percentile (q33) as the preferred conservative auction-price estimation method for screening luxury watches for further investigation. Do not use the model to automatically recommend purchases or determine maximum bids.
+
+Rationale: The model reflects the assumption that overestimating auction prices is twice as costly as underestimating them. On the 2024 validation set (802 records), quantile regression reduced average dollar pinball loss by 9.25% compared with the brand-q33 baseline ($3,975.74 versus $4,380.90).
+
+The 2025–2026 retrospective evaluation (1,370 records) showed a smaller but positive improvement of 4.38% ($6,455.02 versus $6,750.88). Brand-specific loss improvements were 2.79% for Cartier, 8.64% for Omega, and 4.99% for Rolex.
+
+Alternative rejected: Use the simpler brand-q33 baseline as the primary valuation method. Although the baseline is easier to interpret and maintain, quantile regression achieved lower average dollar pinball loss in both evaluation periods and across all three brands in the retrospective test. The baseline will be retained as a benchmark for future comparisons.
+
+Screening rule: Flag a watch for further investigation when its predicted q33 auction price is at least 10% above an independently available pre-auction price benchmark. The 10% margin is illustrative and has not been optimized. If no reliable pre-auction benchmark exists, report the valuation without issuing a screening flag.
+
+Simulation evidence: A simulation using 3,000 synthetic watch records recovered coefficients close to their known values. Observed q33 calibration was 33.37% against the 33.33% target, and the mean absolute difference between estimated and true conditional q33 predictions was $40.63. This supports the simplified method's implementation but does not establish real-world model validity.
+
+Uncertainty and limitations: The 2025–2026 retrospective evaluation produced overall q33 calibration of 29.78% and 78.25% coverage for the nominal 80% prediction interval. Brand-specific q33 calibration varied: Cartier 21.41%, Omega 39.47%, and Rolex 30.61%.
+
+Omega achieved the largest relative improvement in dollar pinball loss despite calibration above the target. This demonstrates that lower cost-weighted prediction error does not necessarily imply better quantile calibration.
+
+Additionally, 1,088 of the 1,370 chronological test records had been exposed during earlier random-split development. The retrospective results cannot be presented as evidence from a completely untouched holdout.
+
+Revisit condition: Reconsider the model if genuinely unseen auction data show no improvement over the brand-q33 baseline, if brand-specific calibration deteriorates materially, or if actual pre-auction benchmark and investigation-cost data show that the screening policy does not improve decisions. Investigate brand-specific calibration or alternative models before changing the current approach.
+
+Files affected: analysis.ipynb, decisions.md.
+
 ## 2026-11-09 — Conservative Description-Based Cleaning and Candidate Validation
 
 **Decision:** Use conservative rule-based extraction to recover missing watch specifications from auction descriptions while preserving the approved source dataset. Save the enriched values in a separate candidate CSV rather than modifying existing fields.
