@@ -2,6 +2,19 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
+### 2026-11-09 — Conservative Description-Based Cleaning and Candidate Validation
+
+**Decision:** Use conservative rule-based extraction to recover missing watch specifications from auction descriptions while preserving the approved source dataset. Save the enriched values in a separate candidate CSV rather than modifying existing fields.
+
+**Rationale:** The revised cleaning procedure recovered 1,734 missing values across six normalized fields, improving 664 of 4,664 auction records (14.24%). Missingness decreased by 13.43% across the six affected fields. The integrity audit confirmed that all 212 original columns and 667 literal `None` values were preserved without modifying original source values.
+
+**Alternative rejected:** Broader text extraction that identifies dial colors from references to hands or markers, or case materials from references to bezels or case backs. Although broader extraction produced more populated values, it increased the risk of incorrect specifications. The preliminary procedure recovered 1,805 values, compared with 1,734 under the revised conservative rules.
+
+**Modeling decision:** Do not include the newly enriched fields in the current fitted quantile-regression model. The candidate dataset has improved completeness, but the accuracy of recovered specifications and their effect on out-of-sample prediction have not yet been established.
+
+**Revisit condition:** Reconsider using the enriched fields after manual validation of recovered dial colors and case materials, confirmation that extraction errors are acceptably low, and an evaluation showing improved out-of-sample dollar pinball loss relative to the current model using the same validation design. Retain the simpler model if the enrichment does not provide a reliable improvement.
+
+**Files affected:** `analysis.ipynb`, `data/README.md`; candidate dataset `expanded_pull_eligible_cleaned.csv` (stored outside the public repository).
 
 ## 2026-11-07: Asymmetric loss and quantile regression
 
