@@ -217,7 +217,7 @@ The cleaned dataset remains a candidate and is not used in the current fitted re
 
 ### 7.6 Modeling Implications
 
-The additional cleaned columns provide candidate predictors for the watch-price prediction models. They are not automatically included in model training.
+The additional cleaned columns provide candidate predictors for future evaluation. They are not included in the current fitted regression and require manual validation and team approval before modeling use.
 
 Predictor selection will consider information available before the auction purchase decision, missingness, extraction reliability, and validation performance.
 
