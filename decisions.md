@@ -2,7 +2,7 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
-### 2026-11-09 — Conservative Description-Based Cleaning and Candidate Validation
+## 2026-11-09 — Conservative Description-Based Cleaning and Candidate Validation
 
 **Decision:** Use conservative rule-based extraction to recover missing watch specifications from auction descriptions while preserving the approved source dataset. Save the enriched values in a separate candidate CSV rather than modifying existing fields.
 
@@ -126,7 +126,7 @@ Alternative. Keep the random 60/20/20 split, seed 20261024, as the primary evalu
 
 Revisit. Revisit this split if a refreshed eligible file changes these dates or counts, if new explicit case-serial evidence shows another physical watch in more than one period, or if a brand or auction house becomes too thin for the purchasing comparison. Revisit using these 1,370 test lots as a final performance number if the prior use of 1,088 of them is not an acceptable safeguard. Do not describe those 1,088 lots as unseen. Do not move the date boundaries to improve a model score.
 
-##2026-11-01: Asymmetric loss and quantile regression
+## 2026-11-01: Asymmetric loss and quantile regression
 
 Decision. Following Professor Sokolov's feedback in Issue #6, replace MAE as the primary evaluation metric with tilted absolute loss (pinball loss). Fit conditional quantile regression on log-transformed auction prices and convert predictions back to USD for purchasing comparisons.
 
