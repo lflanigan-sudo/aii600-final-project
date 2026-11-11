@@ -2,6 +2,104 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
+## 2026-11-09 — Model Validation, Screening Policy, and Retrospective Evaluation
+
+Decision: Retain quantile regression at the 33rd percentile (q33) as the preferred conservative auction-price estimation method for screening luxury watches for further investigation. Do not use the model to automatically recommend purchases or determine maximum bids.
+
+Rationale: The model reflects the assumption that overestimating auction prices is twice as costly as underestimating them. On the 2024 validation set (802 records), quantile regression reduced average dollar pinball loss by 9.25% compared with the brand-q33 baseline ($3,975.74 versus $4,380.90).
+
+The 2025–2026 retrospective evaluation (1,370 records) showed a smaller but positive improvement of 4.38% ($6,455.02 versus $6,750.88). Brand-specific loss improvements were 2.79% for Cartier, 8.64% for Omega, and 4.99% for Rolex.
+
+Alternative rejected: Use the simpler brand-q33 baseline as the primary valuation method. Although the baseline is easier to interpret and maintain, quantile regression achieved lower average dollar pinball loss in both evaluation periods and across all three brands in the retrospective test. The baseline will be retained as a benchmark for future comparisons.
+
+Screening rule: Flag a watch for further investigation when its predicted q33 auction price is at least 10% above an independently available pre-auction price benchmark. The 10% margin is illustrative and has not been optimized. If no reliable pre-auction benchmark exists, report the valuation without issuing a screening flag.
+
+Simulation evidence: A simulation using 3,000 synthetic watch records recovered coefficients close to their known values. Observed q33 calibration was 33.37% against the 33.33% target, and the mean absolute difference between estimated and true conditional q33 predictions was $40.63. This supports the simplified method's implementation but does not establish real-world model validity.
+
+Uncertainty and limitations: The 2025–2026 retrospective evaluation produced overall q33 calibration of 29.78% and 78.25% coverage for the nominal 80% prediction interval. Brand-specific q33 calibration varied: Cartier 21.41%, Omega 39.47%, and Rolex 30.61%.
+
+Omega achieved the largest relative improvement in dollar pinball loss despite calibration above the target. This demonstrates that lower cost-weighted prediction error does not necessarily imply better quantile calibration.
+
+Additionally, 1,088 of the 1,370 chronological test records had been exposed during earlier random-split development. The retrospective results cannot be presented as evidence from a completely untouched holdout.
+
+Revisit condition: Reconsider the model if genuinely unseen auction data show no improvement over the brand-q33 baseline, if brand-specific calibration deteriorates materially, or if actual pre-auction benchmark and investigation-cost data show that the screening policy does not improve decisions. Investigate brand-specific calibration or alternative models before changing the current approach.
+
+Files affected: analysis.ipynb, decisions.md.
+
+## 2026-11-09 — Conservative Description-Based Cleaning and Candidate Validation
+
+**Decision:** Use conservative rule-based extraction to recover missing watch specifications from auction descriptions while preserving the approved source dataset. Save the enriched values in a separate candidate CSV rather than modifying existing fields.
+
+**Rationale:** The revised cleaning procedure recovered 1,734 missing values across six normalized fields, improving 664 of 4,664 auction records (14.24%). Missingness decreased by 13.43% across the six affected fields. The integrity audit confirmed that all 212 original columns and 667 literal `None` values were preserved without modifying original source values.
+
+**Alternative rejected:** Broader text extraction that identifies dial colors from references to hands or markers, or case materials from references to bezels or case backs. Although broader extraction produced more populated values, it increased the risk of incorrect specifications. The preliminary procedure recovered 1,805 values, compared with 1,734 under the revised conservative rules.
+
+**Modeling decision:** Do not include the newly enriched fields in the current fitted quantile-regression model. The candidate dataset has improved completeness, but the accuracy of recovered specifications and their effect on out-of-sample prediction have not yet been established.
+
+**Revisit condition:** Reconsider using the enriched fields after manual validation of recovered dial colors and case materials, confirmation that extraction errors are acceptably low, and an evaluation showing improved out-of-sample dollar pinball loss relative to the current model using the same validation design. Retain the simpler model if the enrichment does not provide a reliable improvement.
+
+**Files affected:** `analysis.ipynb`, `data/README.md`; candidate dataset `expanded_pull_eligible_cleaned.csv` (stored outside the public repository).
+
+## 2026-11-07: Asymmetric loss and quantile regression
+
+Decision. Use a 2:1 cost ratio for overestimating versus underestimating luxury watch auction prices. Fit regularized quantile regression at τ = 1/3 (approximately 0.333) on log sale price. Evaluate predictions in USD using asymmetric pinball loss on the chronological validation set.
+
+Why. The model supports watch acquisition screening, where overestimating resale value can lead to paying too much, while underestimating value may result in a missed opportunity. With overestimation costing twice as much as underestimation, the appropriate target is the 33rd conditional percentile rather than the mean or median. This produces more conservative price estimates.
+
+On the 2024 validation set (802 records), the model achieved a dollar-scale pinball loss of $3,975.74, improving 12.05% over the brand-median baseline ($4,520.62) and 9.25% over the brand-specific 33rd-percentile baseline ($4,380.90).
+
+Alternative. Use ordinary least squares or median regression with equal error costs. These approaches are simpler but do not directly reflect the team's assumed asymmetric acquisition risk. A brand-specific 33rd-percentile baseline is a simpler alternative that directly targets the chosen quantile. A dollar-price quantile model is also reasonable because fitting on log prices does not directly minimize dollar-scale pinball loss.
+
+Checks. The three quantile models use independent preprocessing pipelines. No quantile crossings were observed across the 802 validation records.
+
+Overall, 30.42% of actual prices fell below the predicted 33rd percentile, compared with the nominal target of 33.33%. The estimated 10th–90th percentile intervals achieved 76.81% coverage, slightly below the nominal 80%.
+
+Brand-level calibration differed substantially:
+
+Cartier: 19.94% below q33; 81.01% interval coverage.
+
+Omega: 43.35% below q33; 65.52% interval coverage.
+
+Rolex: 32.86% below q33; 80.21% interval coverage.
+
+These results indicate that improvements in aggregate validation loss do not guarantee reliable calibration for every brand.
+
+Revisit. Reconsider the 2:1 cost ratio if actual acquisition costs suggest a different relationship between overestimation and underestimation. Reevaluate the model if brand-specific calibration remains poor, particularly for Omega, or if future chronological evaluation fails to show an improvement over the brand-specific 33rd-percentile baseline.
+
+Investigate whether alternative specifications, including dollar-price quantile regression or brand-specific models, improve calibration and decision performance without introducing excessive complexity. Preserve the reserved test partition for final evaluation, while acknowledging that some test records were exposed during earlier model development.
+
+
+## 2026-11-07: Audit preliminary description-based data cleaning
+
+Decision. Create a separate cleaned dataset, data/expanded_pull_eligible_cleaned.csv, using the approved expanded_pull_eligible.csv as the source. Preserve all 4,664 records and 212 original columns, and add 66 columns with the suffix _cleaned, corresponding to the existing norm_* fields. Copy existing normalized values and attempt to populate missing values using explicitly labeled information from norm_item_description. Do not overwrite populated normalized values or modify the approved source dataset. Treat the resulting file as preliminary and do not replace the team's approved modeling predictors until validation is complete.
+
+Why. Missing watch specifications may limit auction-price prediction accuracy. Catalogue descriptions contain additional information about watch models, reference numbers, dials, cases, and bracelets that can potentially recover missing predictor values. Retaining separate cleaned columns allows the team to compare the new extraction against the existing normalized and reviewed fields without losing the original information.
+
+Checks. The initial audit found 1,805 newly populated cells across 675 of the 4,664 records (14.5%). Six normalized fields improved:
+
+norm_dial: 650 values recovered.
+
+norm_watch_case: 568 values recovered.
+
+norm_reference: 245 values recovered.
+
+norm_strap_bracelet: 216 values recovered.
+
+norm_dial_color: 78 values recovered.
+
+norm_model: 48 values recovered.
+
+Across these six fields, missing cells decreased from 12,911 to 11,106, a 14.0% reduction. No existing populated normalized values were overwritten. The cleaned dataset contains 278 columns.
+
+Quality issues. The audit identified 667 differences in the original item_provenance column, associated with conversion of the literal string None into blank values during CSV processing. The import process should use keep_default_na=False to preserve these source values. The dial-color extraction also requires review because some colors describe hands, numerals, or markers rather than the dial itself. These issues have been identified but are not yet confirmed as corrected.
+
+Modeling implications. Additional populated fields do not establish that the extracted specifications are accurate or that prediction performance will improve. Continue using the previously approved predictor-construction rules in scripts.predictors, including reviewed case-body and movement decisions. Do not automatically substitute the new _cleaned fields. Any later comparison must use the existing chronological training and validation assignments without changing the split or scoring the reserved test partition.
+
+Alternative. Continue using only the existing normalized and reviewed predictors, leaving missing values unresolved. This avoids introducing extraction errors but may discard useful information available in catalogue descriptions. Automatically replacing existing values with newly extracted specifications was rejected because it could override reviewed corrections and introduce incorrect predictor values.
+
+Revisit. Correct the item_provenance preservation issue, review questionable dial-color extractions, and rerun the quality audit. Compare newly recovered specifications against the existing reviewed fields and document unresolved conflicts. Record the final cleaned-file SHA-256 checksum after corrections. Evaluate whether validated cleaned predictors improve performance on the chronological validation partition before adopting them for modeling. Preserve the approved original dataset and existing chronological assignments throughout.
+
+
 ## 2026-11-04: Integrate the chronological split into the analysis notebook
 
 Decision. Read `processed/expanded_pull_eligible.csv` from `WATCH_DATA_DIR`, keep source fields as strings, and require SHA-256 `cf3b41d890af1feba9348fa9a73d954fcab193ed890a39044bd0355198fc5a8a`. Build the final predictors with `construct_record` from `scripts.predictors`. Take partition membership from the saved chronological assignment and omission files, joined on unique `record_id`, without regenerating or overwriting those files. The active sale-price summary uses the 2,490 chronological training rows. The training-plot cell is written to save `fig/chronological_training_price_boxplot.png` when it is run. That cell has no saved output, and the file is not present. Keep `fig/watch_price_boxplot.png` as the preserved full-sample figure and do not regenerate it. Keep the earlier full-sample medians and catalogue missingness as historical description. Do not fit a model, generate predictions, or score validation or test.
@@ -52,7 +150,7 @@ Alternative. Keep the random 60/20/20 split, seed 20261024, as the primary evalu
 
 Revisit. Revisit this split if a refreshed eligible file changes these dates or counts, if new explicit case-serial evidence shows another physical watch in more than one period, or if a brand or auction house becomes too thin for the purchasing comparison. Revisit using these 1,370 test lots as a final performance number if the prior use of 1,088 of them is not an acceptable safeguard. Do not describe those 1,088 lots as unseen. Do not move the date boundaries to improve a model score.
 
-##2026-11-01: Asymmetric loss and quantile regression
+## 2026-11-01: Asymmetric loss and quantile regression
 
 Decision. Following Professor Sokolov's feedback in Issue #6, replace MAE as the primary evaluation metric with tilted absolute loss (pinball loss). Fit conditional quantile regression on log-transformed auction prices and convert predictions back to USD for purchasing comparisons.
 

@@ -1,5 +1,6 @@
 ---
-title: "Project title"
+title: "Conservative Luxury Watch Auction Valuation"
+subtitle: "AII 600 · Final Project"
 format:
   revealjs:
     embed-resources: true
@@ -7,20 +8,65 @@ format:
     slide-number: true
     width: 1280
     height: 720
+    theme: simple
+    transition: fade
 ---
 
 ## Action
 
-What should be done. Replace this sentence.
+**Use the predicted 33rd-percentile auction price (q33) to screen watches for further investigation—not to make automatic purchase or bidding decisions.**
+
+- Compare the model's q33 estimate with an **independent pre-auction benchmark**.
+- Flag a candidate when `predicted q33 ≥ 1.10 × benchmark`.
+- Treat the **10% margin as illustrative**, not an optimized trading threshold.
+- Without a documented pre-auction benchmark, **report the estimate without a flag**.
+
+::: {.notes}
+Our objective is to prioritize further review. We cannot claim profitable purchase decisions because the historical dataset does not establish executable pre-auction costs, resale proceeds, or investigation expenses.
+:::
 
 ## Reason
 
-Why, in the decision maker's units. The held-out score in `analysis.ipynb` has to agree with this slide.
+**Quantile regression reduced cost-weighted auction-price prediction error relative to a brand-only q33 baseline.**
+
+| Evaluation period | Brand-q33 baseline | Quantile regression | Reduction |
+|:--|--:|--:|--:|
+| **2024 validation** (802 watches) | $4,380.90 | $3,975.74 | **9.25%** |
+| **2025–26 retrospective** (1,370 watches) | $6,750.88 | $6,455.02 | **4.38%** |
+
+*Metric: mean dollar-scale pinball loss; lower is better. Overestimation is assigned twice the cost of underestimation.*
+
+::: {.notes}
+The model uses brand, model, case material, movement, and watch age at sale. The retrospective evaluation is not an untouched holdout: 1,088 of 1,370 records were exposed during earlier random-split development. The model was not retuned after this retrospective evaluation.
+:::
 
 ## Risk
 
-The main risk of the action: a probability or a cost, not the held-out score.
+**The key decision risk is overestimating a watch's auction value, especially where calibration varies by brand.**
+
+- The intended q33 calibration is **33.33%** of realized prices falling below the predicted q33.
+- On 2025–26 retrospective records, **39.47% of Omega prices** fell below predicted q33—**6.14 percentage points above target**.
+- Overall retrospective q33 calibration was **29.78%**; nominal 80% prediction intervals covered **78.25%** of prices.
+
+**Control:** Require human review and brand-level calibration monitoring before acting on any screening flag.
+
+::: {.notes}
+A larger-than-target share of Omega outcomes below predicted q33 indicates that the model's lower-quantile estimates may be too high for Omega, creating overvaluation risk. These are empirical calibration rates, not probabilities of a profitable or unprofitable trade.
+:::
 
 ## Value
 
-What it is worth to be less wrong, in the units of the loss.
+**The model's measured value is less dollar-weighted prediction error—not verified investment profit.**
+
+| Comparison against brand-q33 | Reduction in mean dollar pinball loss |
+|:--|--:|
+| **2024 validation** | **$405.16 per watch** |
+| **2025–26 retrospective** | **$295.86 per watch** |
+
+- The loss metric reflects our **2:1 penalty for overestimation versus underestimation**.
+- These improvements support **better screening estimates**, but do **not** establish net savings or trading returns.
+- To estimate financial value, collect actual pre-auction benchmarks, transaction costs, and outcomes from a genuinely unseen future sample.
+
+::: {.notes}
+The reductions are arithmetic differences between average model and baseline pinball losses: $4,380.90 − $3,975.74 = $405.16 and $6,750.88 − $6,455.02 = $295.86. They should not be multiplied into projected profit without a validated decision-cost model.
+:::
