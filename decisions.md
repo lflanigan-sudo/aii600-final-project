@@ -2,6 +2,45 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
+## 2026-11-12: Implicit Quantile Network challenger
+
+**Decision.** Retain the regularized linear quantile regression as the benchmark and develop one small Implicit Quantile Network (IQN) as an alternative prediction model, following Professor Sokolov's feedback.
+
+**Rationale.** The linear model provides interpretable, cost-sensitive predictions but may not capture nonlinear relationships among watch characteristics. The IQN will learn conditional auction-price quantiles by taking watch features and a cosine embedding of the quantile level as inputs. Training will use dollar-price pinball loss with freshly sampled quantile levels.
+
+**Evaluation.** Fit the network using only the 2,490 training sales from 2021–2023. Select all hyperparameters using the 802 validation sales from 2024. Compare the IQN's q33 average dollar pinball loss against the existing linear model ($3,975.74) and brand-q33 baseline ($4,380.90), using identical observations and loss definitions. Exclude all 2025–2026 sales from training and model selection.
+
+**Alternative.** Retain the linear model without testing a neural network. This avoids additional complexity but leaves possible nonlinear improvements unexplored.
+
+**Interpretation.** Because the IQN has no directly interpretable regression coefficients, estimate the local age effect in USD per year at a stated watch and calculate q33 price contrasts by changing one categorical feature at a time. Report these as predictive associations rather than causal effects.
+
+**Tradeoff.** The IQN may capture nonlinear patterns and interactions but has greater overfitting risk with 2,490 training records and is harder to interpret. Rare model categories will remain collapsed.
+
+**Revisit.** Adopt the IQN only if it improves 2024 validation dollar pinball loss and provides acceptable stability and calibration. Otherwise, retain the linear quantile regression. Record actual IQN results after fitting; no improvement is assumed.
+
+**Status.** Planned experiment; IQN has not yet been fitted or evaluated.
+
+## 2026-11-12: Movement-category standardization and quantile regression refit
+
+**Decision.** Retain the existing regularized 33rd-percentile quantile regression as the primary model while evaluating a revised specification using standardized movement categories: automatic, manual winding, and quartz. Treat the revised specification as an experimental candidate until its data quality and reproducibility are verified.
+
+**Why.** Movement type may help explain auction-price differences, but inconsistent or missing classifications can weaken its predictive value. The revised feature extraction changed movement information for 420 training records and 879 records overall. We tested whether these changes improved prediction accuracy without changing the model family, chronological split, or asymmetric loss function.
+
+**Evidence.** Both specifications used 2,490 training records from 2021–2023 and 802 validation records from 2024. The original regression produced a validation dollar pinball loss of $3,975.74. The standardized-movement refit reduced this to $3,969.35, an improvement of $6.39 per watch (approximately 0.16%). The brand-q33 baseline remained at $4,380.90, giving the revised model a 9.40% lower validation loss.
+
+The revised model's 33rd-percentile calibration was 30.30%, compared with 30.42% for the original model and a nominal target of 33.33%. Its 80% prediction interval coverage improved slightly from 76.81% to 77.06%. These results suggest a small predictive benefit but do not establish a substantial or consistent improvement.
+
+**Alternative.** Adopt the standardized-movement refit immediately as the primary model. We rejected immediate adoption because the validation improvement was small, calibration did not improve, and the revised specification has not yet been evaluated retrospectively. We also considered expanding the model with case diameter and gemstone characteristics, but those features require further validation because of missing values and uncertain classifications.
+
+**Tradeoff.** Standardized movement information may improve predictive accuracy, but it introduces additional preprocessing and data-quality dependencies. The simpler existing specification is easier to reproduce and already performs better than the brand-specific quantile baseline.
+
+**Revisit.** Reconsider adopting the revised model if the movement classifications pass validation, the notebook runs reproducibly, and additional genuinely unseen observations support lower decision-weighted loss without unacceptable deterioration in brand-specific calibration. Reconsider the value of movement enrichment if the improvement disappears after correcting extraction errors or evaluating future auctions.
+
+**Limitations.** The 2025–2026 retrospective evaluation is partially exposed because 1,088 of its 1,370 observations influenced earlier model development. It should not be described as an untouched test set. Dollar pinball loss measures asymmetric prediction error, not realized purchasing profit.
+
+**Next step.** Preserve the original model results, isolate the experimental model variables to prevent notebook-state contamination, verify the revised feature extraction, and document any subsequent model comparison before changing the primary specification.
+
+
 ## 2026-11-09 — Model Validation, Screening Policy, and Retrospective Evaluation
 
 Decision: Retain quantile regression at the 33rd percentile (q33) as the preferred conservative auction-price estimation method for screening luxury watches for further investigation. Do not use the model to automatically recommend purchases or determine maximum bids.
