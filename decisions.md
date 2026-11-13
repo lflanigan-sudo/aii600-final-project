@@ -2,6 +2,16 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
+## 2026-11-13: IQN fitted beside the frozen linear benchmark
+
+**Decision.** Keep the regularized linear q33 model as the benchmark. Record the implicit quantile network as a challenger, not a replacement.
+
+**Why.** The network was fit on the 2,490 training sales only. Width, learning rate, weight decay, and the stopping epoch were selected on the 802 validation sales from 2024. Seed 20261024. On those same 802 sales, dollar pinball loss was $4,380.90 for the brand-q33 baseline, $3,975.74 for the linear model, and $3,207.60 for the selected IQN (width 32, learning rate 0.003, weight decay 0.0001, epoch 250). The IQN loss is the best loss in that search. The share of validation prices at or below the IQN q33 was 28.55%, compared with 30.42% for the linear model and a target of 33.33%. Cartier was 24.05%. Most of the pinball gain was Rolex. The 2025–2026 partition was not scored.
+
+**Alternative.** Replace the linear model because the IQN's 2024 pinball loss is lower. That was rejected because the lower loss selected the network, and the quantile calibration got worse.
+
+**Revisit.** Reconsider the IQN if the lower dollar pinball persists on sales that were not used to choose these settings, and if the share of prices at or below q33 is near one third within each brand.
+
 ## 2026-11-12: Implicit Quantile Network challenger
 
 **Decision.** Retain the regularized linear quantile regression as the benchmark and develop one small Implicit Quantile Network (IQN) as an alternative prediction model, following Professor Sokolov's feedback.
