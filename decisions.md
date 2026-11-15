@@ -3,6 +3,28 @@
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
 
+## 2026-11-15: Gradient-Boosted Quantile Regression Evaluation
+
+**Decision.** Retain the regularized linear q33 regression as the reference model. Record gradient-boosted quantile regression as the leading challenger by 2024 validation dollar pinball loss, alongside the previously evaluated Implicit Quantile Network (IQN). Do not replace the reference model until the booster's calibration, interval coverage, and temporal robustness have been evaluated further.
+
+**Why.** We evaluated gradient-boosted quantile regression using the existing chronological split: 2,490 training sales from 2021–2023 and 802 validation sales from 2024. We compared 32 model settings using log-price and dollar-price targets.
+
+The selected model uses log auction price, a learning rate of 0.1, maximum tree depth of 6, minimum of 20 observations per leaf, no L2 regularization, and 112 boosting trees.
+
+On the same 802 validation sales, average dollar pinball loss was:
+
+| Model | Dollar pinball loss |
+|---|---:|
+| Brand-q33 baseline | $4,380.90 |
+| Linear q33 regression | $3,975.74 |
+| IQN | $3,207.60 |
+| Best dollar-scale booster | $3,202.98 |
+| Best log-scale booster | $3,168.73 |
+
+The selected booster reduced validation dollar pinball loss by $807.01 (20.30%) relative to linear regression and by $38.87 (1.21%) relative to IQN. All tested log-scale settings achieved lower validation loss than the linear reference model, suggesting the improvement was not limited to a single hyperparameter combination.
+
+**Calibration and
+
 ## 2026-11-15: Model Comparison, Feature Expansion, and Next Steps
 
 **Decision.** Retain the regularized linear q33 regression as the reference model. Preserve the three-value movement refit and Implicit Quantile Network (IQN) as evaluated alternatives. Do not add recovered specifications or additional predictors to the reference model until their data quality and predictive contribution have been tested.
