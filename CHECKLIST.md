@@ -16,7 +16,7 @@ Tick every line that the pushed `main` covers. A line you cannot tick needs one 
 
 ## 3. Model
 
-- [ ] The model as equations. Each parameter in words, and the mechanism it stands for.
+- [x] The model as equations. Each parameter in words, and the mechanism it stands for.
 - [ ] The assumptions, and the one you trust least.
 - [ ] Simulated data from the model, checked against the real data. If the fit can recover known parameters, show that it does.
 
@@ -40,7 +40,7 @@ Tick every line that the pushed `main` covers. A line you cannot tick needs one 
 
 ## Decisions
 
-- [ ] `decisions.md` is the history: each choice, why, the alternative rejected, and what would change it. Old entries are still in the file.
+- [x] `decisions.md` is the history: each choice, why, the alternative rejected, and what would change it. Old entries are still in the file.
 
 ## 7. Communicate
 
@@ -58,4 +58,4 @@ Tick every line that the pushed `main` covers. A line you cannot tick needs one 
 
 ## Disclosure
 
-- [ ] One line in `README.md`: which AI tools you used, and for what.
+- [x] One line in `README.md`: which AI tools you used, and for what.
