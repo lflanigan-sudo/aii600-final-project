@@ -4,15 +4,15 @@ Tick every line that the pushed `main` covers. A line you cannot tick needs one 
 
 ## 1. Question
 
-- [ ] The question is one sentence, then one quantity with units and a time window.
-- [ ] The decision is named, and the loss or profit is a formula. The costlier mistake is named.
-- [ ] A layer diagram: data, model, prediction, decision.
+- [x] The question is one sentence, then one quantity with units and a time window.
+- [x] The decision is named, and the loss or profit is a formula. The costlier mistake is named.
+- [x] A layer diagram: data, model, prediction, decision.
 
 ## 2. Data
 
-- [ ] Source, unit of observation, sample size, time span, and how it was collected.
-- [ ] How the measurement differs from the quantity the decision needs, and whether that gap is bias or noise.
-- [ ] One plot of the raw data and one table of summary statistics, before any model.
+- [x] Source, unit of observation, sample size, time span, and how it was collected.
+- [x] How the measurement differs from the quantity the decision needs, and whether that gap is bias or noise.
+- [x] One plot of the raw data and one table of summary statistics, before any model.
 
 ## 3. Model
 
@@ -50,11 +50,11 @@ Tick every line that the pushed `main` covers. A line you cannot tick needs one 
 
 ## Repository
 
-- [ ] Names and GitHub usernames are in `README.md`.
-- [ ] A group reached `main` through pull requests, and each request names a `decisions.md` entry.
-- [ ] `requirements.txt` pins the packages, and `.python-version` is the interpreter that ran the notebook. An R project uses `renv.lock` instead, which records the R version.
-- [ ] The `data` release holds the data files, or `data/README.md` gives the command that downloads them from the source. Each file has a SHA-256 there, and the notebook checks it. The notebook on `main` was run from the top and committed with its outputs. Secrets and fitted weights are not in git.
-- [ ] The split entry in `decisions.md` records the cutoff date, or the seed and the fraction.
+- [x] Names and GitHub usernames are in `README.md`.
+- [x] A group reached `main` through pull requests, and each request names a `decisions.md` entry.
+- [x] `requirements.txt` pins the packages, and `.python-version` is the interpreter that ran the notebook. An R project uses `renv.lock` instead, which records the R version.
+- [x] The `data` release holds the data files, or `data/README.md` gives the command that downloads them from the source. Each file has a SHA-256 there, and the notebook checks it. The notebook on `main` was run from the top and committed with its outputs. Secrets and fitted weights are not in git.
+- [x] The split entry in `decisions.md` records the cutoff date, or the seed and the fraction.
 
 ## Disclosure
 
