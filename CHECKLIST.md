@@ -4,19 +4,19 @@ Tick every line that the pushed `main` covers. A line you cannot tick needs one 
 
 ## 1. Question
 
-- [x] The question is one sentence, then one quantity with units and a time window.
-- [x] The decision is named, and the loss or profit is a formula. The costlier mistake is named.
-- [x] A layer diagram: data, model, prediction, decision.
+- [ ] The question is one sentence, then one quantity with units and a time window.
+- [ ] The decision is named, and the loss or profit is a formula. The costlier mistake is named.
+- [ ] A layer diagram: data, model, prediction, decision.
 
 ## 2. Data
 
-- [x] Source, unit of observation, sample size, time span, and how it was collected.
-- [x] How the measurement differs from the quantity the decision needs, and whether that gap is bias or noise.
-- [x] One plot of the raw data and one table of summary statistics, before any model.
+- [ ] Source, unit of observation, sample size, time span, and how it was collected.
+- [ ] How the measurement differs from the quantity the decision needs, and whether that gap is bias or noise.
+- [ ] One plot of the raw data and one table of summary statistics, before any model.
 
 ## 3. Model
 
-- [x] The model as equations. Each parameter in words, and the mechanism it stands for.
+- [ ] The model as equations. Each parameter in words, and the mechanism it stands for.
 - [ ] The assumptions, and the one you trust least.
 - [ ] Simulated data from the model, checked against the real data. If the fit can recover known parameters, show that it does.
 
@@ -40,7 +40,7 @@ Tick every line that the pushed `main` covers. A line you cannot tick needs one 
 
 ## Decisions
 
-- [x] `decisions.md` is the history: each choice, why, the alternative rejected, and what would change it. Old entries are still in the file.
+- [ ] `decisions.md` is the history: each choice, why, the alternative rejected, and what would change it. Old entries are still in the file.
 
 ## 7. Communicate
 
@@ -50,12 +50,12 @@ Tick every line that the pushed `main` covers. A line you cannot tick needs one 
 
 ## Repository
 
-- [x] Names and GitHub usernames are in `README.md`.
-- [x] A group reached `main` through pull requests, and each request names a `decisions.md` entry.
-- [x] `requirements.txt` pins the packages, and `.python-version` is the interpreter that ran the notebook. An R project uses `renv.lock` instead, which records the R version.
-- [x] The `data` release holds the data files, or `data/README.md` gives the command that downloads them from the source. Each file has a SHA-256 there, and the notebook checks it. The notebook on `main` was run from the top and committed with its outputs. Secrets and fitted weights are not in git.
-- [x] The split entry in `decisions.md` records the cutoff date, or the seed and the fraction.
+- [ ] Names and GitHub usernames are in `README.md`.
+- [ ] A group reached `main` through pull requests, and each request names a `decisions.md` entry.
+- [ ] `requirements.txt` pins the packages, and `.python-version` is the interpreter that ran the notebook. An R project uses `renv.lock` instead, which records the R version.
+- [ ] The `data` release holds the data files, or `data/README.md` gives the command that downloads them from the source. Each file has a SHA-256 there, and the notebook checks it. The notebook on `main` was run from the top and committed with its outputs. Secrets and fitted weights are not in git.
+- [ ] The split entry in `decisions.md` records the cutoff date, or the seed and the fraction.
 
 ## Disclosure
 
-- [x] One line in `README.md`: which AI tools you used, and for what.
+- [ ] One line in `README.md`: which AI tools you used, and for what.
