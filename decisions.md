@@ -2,6 +2,16 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
+## 2026-11-14: IQN interval, calibration, and robustness
+
+**Decision.** Keep the linear q33 model as the benchmark. Keep the IQN as a recorded challenger.
+
+**Why.** The checks use the same 802 validation sales and the same selected network (width 32, learning rate 0.003, weight decay 0.0001, epoch 250, seed 20261024). The q10–q90 band covers 74.94% of those prices, or 75.06% after ordering the endpoints, against a nominal 80%. The median ordered width is $14,466.09. Quantiles cross on 103 sales (12.84%); q10 is above q90 on 4 sales. The calibration bar used here is 5 percentage points from 33.33% (28.33% to 38.33%). A 3-point bar would fail the IQN overall and still pass the linear model's 30.42%. Under the 5-point bar the IQN passes overall (28.55%), Omega, Rolex, and the low and high predicted-price bands. It fails for Cartier (24.05%) and the middle predicted-price band (22.55%). The linear model is farther from one third for Cartier, Omega, and the high predicted-price band. IQN pinball is lower in every reported slice. The mean paired advantage is $768.14. A 2,000-draw bootstrap that resamples the 64 auction dates gives $322.12 to $1,299.59. Rolex is 77.34% of the summed gain. Removing the five largest Rolex gains leaves a mean advantage of $629.66. Category swaps are limited to cells with at least 15 training sales. Supported model-name swaps are Speedmaster to Seamaster (−$555) and Submariner to GMT-Master II (−$3,222). The yellow-gold quartz Cartier Tortue has no other model with 15 training sales. The 2025–2026 partition was not scored. scikit-learn 1.9.1 and SciPy 1.18.1 match requirements.txt.
+
+**Alternative.** Adopt the IQN because the date-clustered interval for the pinball gain lies above zero and several slices are better calibrated than the linear model. That was rejected because the settings were chosen on these 802 sales, Cartier and the middle band miss the 5-point bar, and 12.84% of the quantile triples cross.
+
+**Revisit.** Replace the linear model only if the pinball advantage remains on sales that were not used to choose the settings, Cartier and the middle predicted-price band move inside the 5-point bar or the team adopts a different bar for a stated reason, and the crossing rate is low enough that q10 and q90 can be reported as an interval.
+
 ## 2026-11-13: IQN fitted beside the frozen linear benchmark
 
 **Decision.** Keep the regularized linear q33 model as the benchmark. Record the implicit quantile network as a challenger, not a replacement.

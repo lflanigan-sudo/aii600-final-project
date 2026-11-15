@@ -6,6 +6,7 @@ model_q33, validation_predictions, or the reserved test partition.
 
 import csv
 import hashlib
+import os
 from pathlib import Path
 
 import numpy as np
@@ -25,6 +26,9 @@ N_COSINE = 16
 MAX_EPOCHS = 300
 PATIENCE = 40
 TAUS_PER_ROW = 8
+MIN_SUPPORT = 15
+CALIBRATION_TOLERANCE = 0.05
+BOOTSTRAP_REPLICATES = 2000
 FEATURE_COLS = ["brand", "norm_model", "case_body", "movement", "age_at_sale"]
 CATEGORICAL = ["brand", "norm_model", "case_body", "movement"]
 
@@ -36,9 +40,39 @@ def pinball_loss(actual, predicted, tau):
     return float(np.mean(np.maximum(tau * error, (tau - 1) * error)))
 
 
-def load_partitions(data_root):
-    eligible_path = data_root / "expanded_pull_eligible.csv"
-    assignment_path = data_root / "chronological_split_assignments.csv"
+def resolve_data_root():
+    """Use the notebook rule: WATCH_DATA_DIR, otherwise <repository>/data.
+
+    The eligible file is processed/expanded_pull_eligible.csv when that path
+    exists, and expanded_pull_eligible.csv otherwise. The assignment file is
+    read from that same directory, then from the data root.
+    """
+    raw = os.environ.get("WATCH_DATA_DIR", "").strip().strip('"')
+    if raw:
+        root = Path(raw).expanduser().resolve()
+    else:
+        root = Path(__file__).resolve().parents[1] / "data"
+        os.environ["WATCH_DATA_DIR"] = str(root)
+    if not root.is_dir():
+        raise FileNotFoundError(f"Data directory not found: {root}")
+    eligible_candidates = [
+        root / "processed" / "expanded_pull_eligible.csv",
+        root / "expanded_pull_eligible.csv",
+    ]
+    eligible_path = next((path for path in eligible_candidates if path.is_file()), None)
+    if eligible_path is None:
+        raise FileNotFoundError("Cannot find expanded_pull_eligible.csv under the data root.")
+    assignment_candidates = [
+        eligible_path.parent / "chronological_split_assignments.csv",
+        root / "chronological_split_assignments.csv",
+    ]
+    assignment_path = next((path for path in assignment_candidates if path.is_file()), None)
+    if assignment_path is None:
+        raise FileNotFoundError("Cannot find chronological_split_assignments.csv under the data root.")
+    return root, eligible_path, assignment_path
+
+
+def load_partitions(eligible_path, assignment_path):
     digest = hashlib.sha256(eligible_path.read_bytes()).hexdigest()
     if digest != INPUT_SHA256:
         raise RuntimeError("Eligible file checksum does not match the approved file.")
@@ -63,6 +97,7 @@ def load_partitions(data_root):
                 "record_id": record_id,
                 "brand": assignment["brand"],
                 "partition": assignment["partition"],
+                "sale_date": assignment["sale_date"],
                 "usd_price": float(source["usd_price_decimal_num"]),
             }
         )
@@ -332,8 +367,30 @@ def fit_iqn(x_train, y_train, x_val, y_val):
 
 
 def representative_contrasts(coder, params, x_train):
+    """Age slopes and one-feature swaps with at least MIN_SUPPORT training sales."""
     observed = x_train.dropna(subset=["age_at_sale"]).copy()
     rows = []
+
+    def training_count(values):
+        mask = pd.Series(True, index=observed.index)
+        for key, value in values.items():
+            mask &= observed[key].eq(value)
+        return int(mask.sum())
+
+    def add_row(brand, prototype, support, age, contrast, changed_support, base_q, change):
+        rows.append(
+            {
+                "brand": brand,
+                "prototype": prototype,
+                "support": support,
+                "age": age,
+                "contrast": contrast,
+                "changed_support": changed_support,
+                "q33_usd": base_q,
+                "change_usd": change,
+            }
+        )
+
     for brand, brand_rows in observed.groupby("brand"):
         named = brand_rows.loc[brand_rows["norm_model"].ne("Other")]
         counts = (
@@ -341,7 +398,10 @@ def representative_contrasts(coder, params, x_train):
             .size()
             .sort_values(ascending=False)
         )
-        model_name, case_body, movement = counts.index[0]
+        supported = [(key, int(count)) for key, count in counts.items() if count >= MIN_SUPPORT]
+        if not supported:
+            continue
+        (model_name, case_body, movement), support = supported[0]
         group = brand_rows.loc[
             brand_rows["norm_model"].eq(model_name)
             & brand_rows["case_body"].eq(case_body)
@@ -349,66 +409,142 @@ def representative_contrasts(coder, params, x_train):
         ]
         age = float(group["age_at_sale"].median())
         base = {"brand": brand, "norm_model": model_name, "case_body": case_body, "movement": movement}
+        prototype = f"{model_name}, {case_body}, {movement}"
         base_q = prototype_q33(coder, params, base, age)
         older = prototype_q33(coder, params, base, age + 1)
         younger = prototype_q33(coder, params, base, age - 1)
+        add_row(brand, prototype, support, age, "age, per year", support, base_q, (older - younger) / 2)
 
-        def training_count(values):
-            mask = pd.Series(True, index=observed.index)
-            for key, value in values.items():
-                mask &= observed[key].eq(value)
-            return int(mask.sum())
+        def best_swap(column):
+            ranked = []
+            for alternative, _count in brand_rows[column].value_counts().items():
+                if alternative == base[column] or alternative == "Other":
+                    continue
+                swapped = dict(base, **{column: alternative})
+                count = training_count(swapped)
+                if count >= MIN_SUPPORT:
+                    ranked.append((count, alternative, swapped))
+            if not ranked:
+                return None
+            ranked.sort(reverse=True)
+            return ranked[0]
 
+        for column, label in (
+            ("movement", "movement"),
+            ("case_body", "case body"),
+            ("norm_model", "model"),
+        ):
+            found = best_swap(column)
+            if found is None:
+                add_row(
+                    brand,
+                    prototype,
+                    support,
+                    age,
+                    f"{label}: no swap with {MIN_SUPPORT}+ training sales",
+                    0,
+                    base_q,
+                    np.nan,
+                )
+                continue
+            count, alternative, swapped = found
+            add_row(
+                brand,
+                prototype,
+                support,
+                age,
+                f"{label} -> {alternative}",
+                count,
+                base_q,
+                prototype_q33(coder, params, swapped, age) - base_q,
+            )
+    return pd.DataFrame(rows)
+
+
+def interval_report(x_val, y_val, params):
+    q10 = predict_usd(x_val, 0.10, params)
+    q33 = predict_usd(x_val, TAU, params)
+    q90 = predict_usd(x_val, 0.90, params)
+    crossing = (q10 > q33) | (q33 > q90) | (q10 > q90)
+    raw_coverage = float(np.mean((y_val >= q10) & (y_val <= q90)))
+    ordered_low = np.minimum(q10, q90)
+    ordered_high = np.maximum(q10, q90)
+    ordered_coverage = float(np.mean((y_val >= ordered_low) & (y_val <= ordered_high)))
+    return {
+        "q10": q10,
+        "q33": q33,
+        "q90": q90,
+        "coverage": raw_coverage,
+        "ordered_coverage": ordered_coverage,
+        "median_width": float(np.median(ordered_high - ordered_low)),
+        "crossing_count": int(crossing.sum()),
+        "crossing_frequency": float(np.mean(crossing)),
+        "endpoint_reversals": int(np.sum(q10 > q90)),
+    }
+
+
+def calibration_report(y_val, prediction, linear_prediction, brands, train_prediction):
+    low_cut, high_cut = np.quantile(train_prediction, [1 / 3, 2 / 3])
+    bands = np.where(
+        prediction <= low_cut,
+        "low predicted price",
+        np.where(prediction <= high_cut, "middle predicted price", "high predicted price"),
+    )
+    slices = [("all", np.ones(len(y_val), dtype=bool))]
+    slices.extend((brand, brands.eq(brand).to_numpy()) for brand in ["Cartier", "Omega", "Rolex"])
+    slices.extend((name, bands == name) for name in ("low predicted price", "middle predicted price", "high predicted price"))
+    rows = []
+    for label, mask in slices:
+        fraction = float(np.mean(y_val[mask] <= prediction[mask]))
+        linear_fraction = float(np.mean(y_val[mask] <= linear_prediction[mask]))
         rows.append(
             {
-                "brand": brand,
-                "prototype": f"{model_name}, {case_body}, {movement}",
-                "support": int(counts.iloc[0]),
-                "age": age,
-                "contrast": "age, per year",
-                "changed_support": int(counts.iloc[0]),
-                "q33_usd": base_q,
-                "change_usd": (older - younger) / 2,
+                "slice": label,
+                "n": int(mask.sum()),
+                "iqn_fraction_below_q33": fraction,
+                "linear_fraction_below_q33": linear_fraction,
+                "iqn_inside_5pp": abs(fraction - TAU) <= CALIBRATION_TOLERANCE,
+                "iqn_pinball_usd": pinball_loss(y_val[mask], prediction[mask], TAU),
+                "linear_pinball_usd": pinball_loss(y_val[mask], linear_prediction[mask], TAU),
             }
         )
-        movement_counts = brand_rows["movement"].value_counts()
-        for alternative in movement_counts.index:
-            if alternative == movement:
-                continue
-            swapped = dict(base, movement=alternative)
-            rows.append(
-                {
-                    "brand": brand,
-                    "prototype": f"{model_name}, {case_body}, {movement}",
-                    "support": int(counts.iloc[0]),
-                    "age": age,
-                    "contrast": f"movement -> {alternative}",
-                    "changed_support": training_count(swapped),
-                    "q33_usd": base_q,
-                    "change_usd": prototype_q33(coder, params, swapped, age) - base_q,
-                }
-            )
-            if len([row for row in rows if row["brand"] == brand and row["contrast"].startswith("movement")]) >= 2:
-                break
-        case_counts = brand_rows["case_body"].value_counts()
-        for alternative in case_counts.index:
-            if alternative == case_body:
-                continue
-            swapped = dict(base, case_body=alternative)
-            rows.append(
-                {
-                    "brand": brand,
-                    "prototype": f"{model_name}, {case_body}, {movement}",
-                    "support": int(counts.iloc[0]),
-                    "age": age,
-                    "contrast": f"case body -> {alternative}",
-                    "changed_support": training_count(swapped),
-                    "q33_usd": base_q,
-                    "change_usd": prototype_q33(coder, params, swapped, age) - base_q,
-                }
-            )
-            break
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows), float(low_cut), float(high_cut)
+
+
+def row_pinball(actual, predicted, tau):
+    error = np.asarray(actual, dtype=float) - np.asarray(predicted, dtype=float)
+    return np.maximum(tau * error, (tau - 1) * error)
+
+
+def robustness_report(y_val, linear_prediction, iqn_prediction, brands, dates):
+    difference = row_pinball(y_val, linear_prediction, TAU) - row_pinball(y_val, iqn_prediction, TAU)
+    codes, _unique = pd.factorize(dates, sort=False)
+    groups = [np.flatnonzero(codes == code) for code in range(codes.max() + 1)]
+    rng = np.random.default_rng(SEED)
+    replicates = np.empty(BOOTSTRAP_REPLICATES)
+    n_dates = len(groups)
+    for draw in range(BOOTSTRAP_REPLICATES):
+        chosen = rng.integers(0, n_dates, n_dates)
+        sampled = np.concatenate([groups[index] for index in chosen])
+        replicates[draw] = difference[sampled].mean()
+    low, high = np.quantile(replicates, [0.025, 0.975])
+    rolex = brands.eq("Rolex").to_numpy()
+    total = float(difference.sum())
+    rolex_share = float(difference[rolex].sum() / total) if total != 0 else np.nan
+    top_positions = np.flatnonzero(rolex)[np.argsort(difference[rolex])[-5:]]
+    top_share = float(difference[top_positions].sum() / total) if total != 0 else np.nan
+    kept = np.ones(len(difference), dtype=bool)
+    kept[top_positions] = False
+    return {
+        "mean_difference": float(difference.mean()),
+        "interval_low": float(low),
+        "interval_high": float(high),
+        "n_dates": n_dates,
+        "rolex_share": rolex_share,
+        "top5_rolex_share": top_share,
+        "mean_without_top5_rolex": float(difference[kept].mean()),
+        "sales_where_iqn_is_worse": int(np.sum(difference < 0)),
+    }
 
 
 def prototype_q33(coder, params, values, age):
@@ -417,8 +553,15 @@ def prototype_q33(coder, params, values, age):
 
 
 def main():
-    data_root = Path(__file__).resolve().parents[1] / "data"
-    train, validation, predictors = load_partitions(data_root)
+    import sklearn
+    import scipy
+
+    _root, eligible_path, assignment_path = resolve_data_root()
+    train, validation, predictors = load_partitions(eligible_path, assignment_path)
+    print("Data root rule: WATCH_DATA_DIR if set, otherwise <repository>/data.")
+    print(f"Eligible file location: {eligible_path.parent.name}/{eligible_path.name}")
+    print(f"Assignment file location: {assignment_path.parent.name}/{assignment_path.name}")
+    print(f"scikit-learn {sklearn.__version__}, SciPy {scipy.__version__}")
     x_train = assemble_features(train, predictors)
     x_val = assemble_features(validation, predictors)
     collapse_rare_models(x_train, x_val)
@@ -470,12 +613,51 @@ def main():
     print("\nPINBALL BY BRAND ON THE SAME VALIDATION SALES")
     print(pd.DataFrame(by_brand).to_string(index=False, float_format=lambda value: f"{value:,.4f}"))
 
-    print("\nLOCAL AGE SLOPE AND CATEGORY SWAPS")
+    print("\nIQN q10 TO q90 ON THE SAME 802 VALIDATION SALES")
+    coded = coder.transform(x_val)
+    intervals = interval_report(coded, y_val, chosen["params"])
+    print(f"Raw 80% interval coverage: {intervals['coverage']:.4f}")
+    print(f"Coverage after ordering q10 and q90: {intervals['ordered_coverage']:.4f}")
+    print(f"Median ordered interval width (USD): {intervals['median_width']:,.2f}")
+    print(f"Quantile crossings: {intervals['crossing_count']} ({intervals['crossing_frequency']:.4f})")
+    print(f"Rows with q10 above q90: {intervals['endpoint_reversals']}")
+
+    print("\nQ33 CALIBRATION, TOLERANCE 5 PERCENTAGE POINTS")
+    print("Predicted-price bands use tertiles of the training q33 predictions.")
+    print("Bands of the realized sale price are not used: a low outcome falls below q33 more often even when the quantile is right.")
+    calibration_table, low_cut, high_cut = calibration_report(
+        y_val, iqn_prediction, linear_prediction, validation["brand"], train_prediction
+    )
+    print(f"Training prediction cuts (USD): {low_cut:,.2f} and {high_cut:,.2f}")
+    print(calibration_table.to_string(index=False, float_format=lambda value: f"{value:,.4f}"))
+    print("The 5-point band is 28.33% to 38.33%. A 3-point band would fail the IQN overall and still pass the linear model's 30.42%.")
+
+    print("\nPAIRED LOSS DIFFERENCE, CLUSTERED BY AUCTION DATE")
+    robust = robustness_report(
+        y_val, linear_prediction, iqn_prediction, validation["brand"], validation["sale_date"]
+    )
+    print(f"Mean linear minus IQN pinball (USD): {robust['mean_difference']:,.4f}")
+    print(
+        f"95% date-cluster bootstrap interval: {robust['interval_low']:,.4f} to {robust['interval_high']:,.4f}"
+    )
+    print(f"Auction dates in the bootstrap: {robust['n_dates']}")
+    print(f"Share of the total gain from Rolex: {robust['rolex_share']:.4f}")
+    print(f"Share from the five Rolex sales with the largest gain: {robust['top5_rolex_share']:.4f}")
+    print(f"Mean difference without those five sales: {robust['mean_without_top5_rolex']:,.4f}")
+    print(f"Validation sales where the IQN loss is higher: {robust['sales_where_iqn_is_worse']}")
+
+    print("\nLOCAL AGE SLOPE AND SUPPORTED CATEGORY SWAPS")
+    print(f"Swaps are kept only when the changed cell has at least {MIN_SUPPORT} training sales.")
     contrasts = representative_contrasts(coder, chosen["params"], x_train)
     print(
         contrasts.to_string(
             index=False,
-            formatters={"age": "{:.1f}".format, "q33_usd": "{:,.2f}".format, "change_usd": "{:,.2f}".format},
+            na_rep="",
+            formatters={
+                "age": "{:.1f}".format,
+                "q33_usd": "{:,.2f}".format,
+                "change_usd": lambda value: "" if pd.isna(value) else f"{value:,.2f}",
+            },
         )
     )
     return {
@@ -484,6 +666,11 @@ def main():
         "baseline_loss": baseline_loss,
         "iqn_loss": iqn_loss,
         "iqn_prediction": iqn_prediction,
+        "q10": intervals["q10"],
+        "q90": intervals["q90"],
+        "intervals": {key: value for key, value in intervals.items() if key not in {"q10", "q33", "q90"}},
+        "calibration_table": calibration_table,
+        "robust": robust,
         "train_loss": train_loss,
         "calibration": calibration,
         "by_brand": by_brand,
