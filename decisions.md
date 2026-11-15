@@ -2,6 +2,33 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
+
+## 2026-11-15: Model Comparison, Feature Expansion, and Next Steps
+
+**Decision.** Retain the regularized linear q33 regression as the reference model. Preserve the three-value movement refit and Implicit Quantile Network (IQN) as evaluated alternatives. Do not add recovered specifications or additional predictors to the reference model until their data quality and predictive contribution have been tested.
+
+**Why.** All model comparisons used the same 802 sales from the 2024 chronological validation period. The brand-q33 baseline achieved an average dollar pinball loss of $4,380.90, the original linear q33 model $3,975.74, the three-value movement refit $3,969.35, and the selected IQN $3,207.60.
+
+The movement refit reduced loss by only $6.39 per sale (0.16%) relative to the original linear model. Its q33 calibration was 30.30%, compared with 30.42% for the original model, and its nominal 80% interval coverage was 77.06%, compared with 76.81%. These differences do not establish a material improvement.
+
+The IQN reduced average dollar pinball loss by $768.14 per sale (19.32%) relative to linear q33. However, its overall q33 calibration was 28.55%, its nominal 80% interval coverage was 74.94%, and 103 of 802 validation predictions (12.84%) had crossing quantiles. Cartier calibration was 24.05%, and the middle predicted-price band was 22.55%, both outside the team's proposed ±5 percentage-point tolerance.
+
+A date-clustered bootstrap supported the IQN's observed validation-loss advantage, but the same 2024 observations were used to select network hyperparameters. Therefore, the results are not an independent confirmation of future performance.
+
+**Feature-expansion decision.** The cleaned candidate dataset recovered 1,734 missing field values across six normalized fields, affecting 664 records. These recovered values were not included in the current fitted regression. Potential additions include case diameter, gold karat, and precious-stone information. Their usefulness remains untested.
+
+**Alternative.** Immediately adopt the IQN because it achieved the lowest validation loss, or expand the linear model using all available cleaned fields. We are not adopting either change yet because the IQN's uncertainty estimates require further validation and the recovered specifications may contain extraction errors. Adding predictors without a controlled comparison could increase complexity without improving decision performance.
+
+**Tradeoff.** Retaining the linear model sacrifices the IQN's observed validation-loss advantage but preserves an interpretable reference specification while the IQN's reliability concerns are investigated. The simpler model is not uniformly better calibrated across brands, so this decision does not establish that it is the best future model.
+
+**Next steps.** Complete a reproducible notebook run and verify all required outputs. Preserve the existing chronological split and model results. If time permits, test a small, justified set of additional watch characteristics using identical evaluation records. Investigate quantile-crossing correction and brand-specific calibration before considering the IQN for operational screening.
+
+**Revisit.** Reconsider the model choice if genuinely independent future auction data confirm the IQN's lower dollar pinball loss, its quantile ordering becomes reliable, and calibration meets the team's stated requirements or a revised, justified criterion. Reconsider additional predictors if validated extraction and controlled comparisons demonstrate a meaningful improvement.
+
+**Limitation.** The 2025–2026 retrospective partition is not a fully untouched holdout because 1,088 of its 1,370 observations were exposed during earlier development. The 2024 validation results are also subject to repeated model-selection effects. Neither set of reported scores establishes realized investment profit.
+
+**Files affected.** `analysis.ipynb`, `decisions.md`. Any future changes to predictor construction or model scripts should be recorded in a separate decision entry.
+
 ## 2026-11-14: IQN interval, calibration, and robustness
 
 **Decision.** Keep the linear q33 model as the benchmark. Keep the IQN as a recorded challenger.
