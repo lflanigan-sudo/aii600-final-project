@@ -127,7 +127,7 @@ The following limitations are relevant to the analysis:
 - **Sampling:** Capped, sale-date-ordered API retrieval means the observations are not a random sample of all luxury watch sales.
 - **Coverage:** The dataset covers only three brands and two auction houses.
 - **Missing information:** Some watch characteristics are incomplete, potentially limiting prediction accuracy.
-- **Price interpretation:** Recorded auction prices may differ from total acquisition or resale costs, which can include buyer's premiums, taxes, shipping, servicing, and resale fees. The precise price definition requires confirmation.
+- **Price interpretation:** `usd_price_decimal_num` equals `sale_price_num` times `usd_currency_rate` on every row. It is the recorded sale price in USD, not a verified hammer price. Two public Bonhams lots label the matching amount "inc. premium." On the 21 Sotheby's rows that also store a hammer, the recorded sale is 1.20 or 1.28 times that hammer. The other Sotheby's results were not visible without login. Catalogue estimates on the checked Sotheby's lots match the published estimates. The file does not record when an estimate was written, and a recorded price is not the total cost of acquiring or reselling a watch. The 2026-11-16 audit is in `final_audit/catalogue_price_audit.md`. The target was not redefined.
 - **Time period:** The dataset covers historical auction sales from February 2021 through July 2026. Auction prices may change over time due to market conditions, collector demand, and economic factors. Therefore, models trained on historical data may not predict future auction prices with the same accuracy.
 
 ## 7. Description-Based Data Cleaning and Quality Audit

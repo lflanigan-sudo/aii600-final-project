@@ -16,7 +16,7 @@ format:
 
 **Use the predicted 33rd-percentile auction price (q33) to screen watches for further investigation—not to make automatic purchase or bidding decisions.**
 
-- Compare the model's q33 estimate with an **independent pre-auction benchmark**.
+- Compare the model's q33 of the **recorded USD sale price** with the catalogue estimate range. The file does not record when that estimate was published.
 - Flag a candidate when `predicted q33 ≥ 1.10 × benchmark`.
 - Treat the **10% margin as illustrative**, not an optimized trading threshold.
 - Without a documented pre-auction benchmark, **report the estimate without a flag**.
@@ -27,46 +27,46 @@ Our objective is to prioritize further review. We cannot claim profitable purcha
 
 ## Reason
 
-**Quantile regression reduced cost-weighted auction-price prediction error relative to a brand-only q33 baseline.**
+**The five-feature gradient booster has 20.30% lower 2024 validation dollar pinball than linear quantile regression.**
 
-| Evaluation period | Brand-q33 baseline | Quantile regression | Reduction |
-|:--|--:|--:|--:|
-| **2024 validation** (802 watches) | $4,380.90 | $3,975.74 | **9.25%** |
-| **2025–26 retrospective** (1,370 watches) | $6,750.88 | $6,455.02 | **4.38%** |
+| 2024 validation (802 watches) | Mean dollar pinball | Share at or below q33 |
+|:--|--:|--:|
+| Linear q33 | $3,975.74 | 30.42% |
+| **Gradient booster** | **$3,168.73** | **35.41%** |
+| Reduction | **$807.01 (20.30%)** | — |
 
-*Metric: mean dollar-scale pinball loss; lower is better. Overestimation is assigned twice the cost of underestimation.*
+- Predictors stay brand, model, case material, movement, and age at sale.
+- **None of the tested feature bundles improved** that 2024 dollar pinball.
+- IQN ($3,207.60) and CatBoost ($3,321.24) were not selected. Both have higher 2024 pinball.
+- 2025–2026 is a later window, not an untouched holdout.
 
 ::: {.notes}
-The model uses brand, model, case material, movement, and watch age at sale. The retrospective evaluation is not an untouched holdout: 1,088 of 1,370 records were exposed during earlier random-split development. The model was not retuned after this retrospective evaluation.
+Pinball is the 2:1 loss divided by 3. Overestimation costs twice underestimation. The booster was not retuned after the later windows. Feature groups B through F all had higher 2024 pinball than $3,168.73, and their date-clustered intervals included zero.
 :::
 
 ## Risk
 
-**The key decision risk is overestimating a watch's auction value, especially where calibration varies by brand.**
+**Lower pinball is not the same as a quantile that sits near one third, and the recorded price is not a verified hammer.**
 
-- The intended q33 calibration is **33.33%** of realized prices falling below the predicted q33.
-- On 2025–26 retrospective records, **39.47% of Omega prices** fell below predicted q33—**6.14 percentage points above target**.
-- Overall retrospective q33 calibration was **29.78%**; nominal 80% prediction intervals covered **78.25%** of prices.
-
-**Control:** Require human review and brand-level calibration monitoring before acting on any screening flag.
+- In 2026, **23.80%** of sales fell at or below the booster q33. The target is **33.33%**. The quantile sat too low.
+- The linear model that year is closer, at 28.95%, but its pinball is higher: $6,537.68 against $5,540.14.
+- Rolex is the costly slice: booster share 21.40% versus linear 31.69%, while booster pinball is lower by $1,802.08. We kept the booster because pinball is the decision loss.
+- The separate interval, adjusted by **$650.96** from 2023 only, covered **78.43%** of 2024 sales and **72.65%** of 2026 sales, against 80%. That adjustment does not change q33.
+- Two public Bonhams lots label the recorded amount "inc. premium." The screen compares a prediction of that recorded price with a catalogue estimate. It flags a lot for investigation. It does not show a profit.
 
 ::: {.notes}
-A larger-than-target share of Omega outcomes below predicted q33 indicates that the model's lower-quantile estimates may be too high for Omega, creating overvaluation risk. These are empirical calibration rates, not probabilities of a profitable or unprofitable trade.
+A share below 33.33% means the predicted q33 was too low, so a 10% screen flags fewer watches. That is the less costly error under the 2:1 loss, and it is still a failed calibration claim for 2026 Rolex and Cartier. We would switch if a later Rolex window put the booster's pinball above the linear model's, or if the team decided a share near 33% outranks pinball.
 :::
 
 ## Value
 
-**The model's measured value is less dollar-weighted prediction error—not verified investment profit.**
+**The measured gain is $807.01 less pinball per 2024 validation watch. That is not a trading return.**
 
-| Comparison against brand-q33 | Reduction in mean dollar pinball loss |
-|:--|--:|
-| **2024 validation** | **$405.16 per watch** |
-| **2025–26 retrospective** | **$295.86 per watch** |
-
-- The loss metric reflects our **2:1 penalty for overestimation versus underestimation**.
-- These improvements support **better screening estimates**, but do **not** establish net savings or trading returns.
-- To estimate financial value, collect actual pre-auction benchmarks, transaction costs, and outcomes from a genuinely unseen future sample.
+- The 20.30% reduction is $3,975.74 − $3,168.73.
+- The same five-feature booster stays ahead of the linear model on pinball in every fixed-setting year from 2022 through 2026.
+- Added listing attributes did not improve the 2024 score, and their publication time is not in the file.
+- A sale above the catalogue midpoint is not evidence the flag would have made money. The file has no bid, purchase, or resale.
 
 ::: {.notes}
-The reductions are arithmetic differences between average model and baseline pinball losses: $4,380.90 − $3,975.74 = $405.16 and $6,750.88 − $6,455.02 = $295.86. They should not be multiplied into projected profit without a validated decision-cost model.
+Do not multiply $807.01 by the number of watches and call the result profit. The price-basis audit did not redefine the target. If the team later decides the target should be the hammer rather than the premium-inclusive sale price, the ranking has to be recomputed before the 20.30% figure is reused.
 :::
