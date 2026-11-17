@@ -1,0 +1,72 @@
+---
+title: "Conservative Luxury Watch Auction Valuation"
+subtitle: "AII 600 · Final Project"
+format:
+  revealjs:
+    embed-resources: true
+    self-contained-math: true
+    slide-number: true
+    width: 1280
+    height: 720
+    theme: simple
+    transition: fade
+---
+
+## Action
+
+**Use the predicted 33rd-percentile auction price (q33) to screen watches for further investigation—not to make automatic purchase or bidding decisions.**
+
+- Compare the model's q33 of the **recorded USD sale price** with the catalogue estimate range. The file does not record when that estimate was published.
+- Flag a candidate when `predicted q33 ≥ 1.10 × benchmark`.
+- Treat the **10% margin as illustrative**, not an optimized trading threshold.
+- Without a documented pre-auction benchmark, **report the estimate without a flag**.
+
+::: {.notes}
+Our objective is to prioritize further review. We cannot claim profitable purchase decisions because the historical dataset does not establish executable pre-auction costs, resale proceeds, or investigation expenses.
+:::
+
+## Reason
+
+**The five-feature gradient booster has 20.30% lower 2024 validation dollar pinball than linear quantile regression.**
+
+| 2024 validation (802 watches) | Mean dollar pinball | Share at or below q33 |
+|:--|--:|--:|
+| Linear q33 | $3,975.74 | 30.42% |
+| **Gradient booster** | **$3,168.73** | **35.41%** |
+| Reduction | **$807.01 (20.30%)** | — |
+
+- Predictors stay brand, model, case material, movement, and age at sale.
+- **None of the tested feature bundles improved** that 2024 dollar pinball.
+- IQN ($3,207.60) and CatBoost ($3,321.24) were not selected. Both have higher 2024 pinball.
+- 2025–2026 is a later window, not an untouched holdout.
+
+::: {.notes}
+Pinball is the 2:1 loss divided by 3. Overestimation costs twice underestimation. The booster was not retuned after the later windows. Feature groups B through F all had higher 2024 pinball than $3,168.73, and their date-clustered intervals included zero.
+:::
+
+## Risk
+
+**Lower pinball is not the same as a quantile that sits near one third, and the recorded price is not a verified hammer.**
+
+- In 2026, **23.80%** of sales fell at or below the booster q33. The target is **33.33%**. The quantile sat too low.
+- The linear model that year is closer, at 28.95%, but its pinball is higher: $6,537.68 against $5,540.14.
+- Rolex is the costly slice: booster share 21.40% versus linear 31.69%, while booster pinball is lower by $1,802.08. We kept the booster because pinball is the decision loss.
+- The separate interval, adjusted by **$650.96** from 2023 only, covered **78.43%** of 2024 sales and **72.65%** of 2026 sales, against 80%. That adjustment does not change q33.
+- Two public Bonhams lots label the recorded amount "inc. premium." The screen compares a prediction of that recorded price with a catalogue estimate. It flags a lot for investigation. It does not show a profit.
+
+::: {.notes}
+A share below 33.33% means the predicted q33 was too low, so a 10% screen flags fewer watches. That is the less costly error under the 2:1 loss, and it is still a failed calibration claim for 2026 Rolex and Cartier. We would switch if a later Rolex window put the booster's pinball above the linear model's, or if the team decided a share near 33% outranks pinball.
+:::
+
+## Value
+
+**The measured gain is $807.01 less pinball per 2024 validation watch. That is not a trading return.**
+
+- The 20.30% reduction is $3,975.74 − $3,168.73.
+- The same five-feature booster stays ahead of the linear model on pinball in every fixed-setting year from 2022 through 2026.
+- Added listing attributes did not improve the 2024 score, and their publication time is not in the file.
+- A sale above the catalogue midpoint is not evidence the flag would have made money. The file has no bid, purchase, or resale.
+
+::: {.notes}
+Do not multiply $807.01 by the number of watches and call the result profit. The price-basis audit did not redefine the target. If the team later decides the target should be the hammer rather than the premium-inclusive sale price, the ranking has to be recomputed before the 20.30% figure is reused.
+:::
