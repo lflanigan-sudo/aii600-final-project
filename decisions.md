@@ -2,6 +2,25 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
+
+## 2026-11-17: Final notebook verification and documentation alignment
+
+**Decision.** Accept the November 17 full notebook execution as the current reproducibility check. Retain the five-feature gradient-boosted quantile regression model, existing chronological split, asymmetric dollar pinball loss, and previously selected hyperparameters. No additional model tuning, feature expansion, or data modification is required for this documentation cleanup.
+
+**Why.** The notebook's 29 nonempty code cells executed sequentially, with execution counts 1–29 and no recorded Python exceptions. The saved outputs agree with the reported 2024 validation results: GBQR dollar pinball loss of $3,168.73 versus $3,975.74 for linear quantile regression, a 20.30% reduction. The IQN and CatBoost comparisons were executed in the notebook and retained their reported results.
+
+The notebook and final documentation distinguish the November 16 standalone diagnostic run from the November 17 full notebook execution. Successful execution in the recorded environment is not an independent reproduction on another machine.
+
+The prediction target remains **recorded auction sale price in USD**, not universally hammer price. The catalogue audit identified premium-inclusive Bonhams prices, while the price basis of all Sotheby's observations has not been independently verified. Catalogue estimates also lack confirmed publication timestamps. Consequently, the screening rule remains exploratory and cannot establish purchasing profitability.
+
+The final recommendation remains GBQR because it achieved the lowest observed 2024 dollar pinball loss. Linear quantile regression remains the interpretable benchmark. The 2026 q33 calibration rate of 23.80%, versus the 33.33% target, and the decline in adjusted prediction-interval coverage from 78.43% in 2024 to 72.65% in 2026 remain material limitations.
+
+**Alternative.** Rebuild the target as hammer price, rerun model selection, introduce brand-specific models, or change the screening threshold. These alternatives were not adopted because the necessary source evidence or independent validation is insufficient, and the current cleanup does not justify reopening the frozen analysis.
+
+**Revisit.** Reconsider the target definition and screening conclusions if verified hammer-price data and pre-auction catalogue records become available for both auction houses. Reconsider the selected model if genuinely new chronological data show that another model has lower asymmetric dollar pinball loss or that brand-specific calibration is more important for the intended screening decision.
+
+**Files affected.** `analysis.ipynb`, `decisions.md`, and any final documentation updated to reflect the verified results. No model settings, input data, or numerical outputs were changed as part of this documentation decision.
+
 ## 2026-11-17: Full notebook execution, and the recorded sale price stays the target
 
 **Decision.** Keep the five-feature gradient booster. The November 17 notebook execution does not change the model, the predictors, or the reported losses. Describe the target as the recorded auction sale price in USD. Do not call that target a hammer price except where a source field actually stores a hammer.
