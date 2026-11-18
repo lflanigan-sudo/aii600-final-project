@@ -12,6 +12,12 @@ Team Member 1: Yelena Flanigan; username: lflanigan-sudo
 Team Member 2: Jordan Mason; username: jmason29
 Team Member 3: Anna Kelly; username: Akschool26
 
+## Model and target
+
+We retain the five-feature gradient-boosted quantile regression model as the leading conservative auction-price predictor because it achieved the lowest observed 2024 asymmetric dollar pinball loss, $3,168.73, which is 20.30% below the linear model's $3,975.74. Linear quantile regression remains the interpretable benchmark. The 2026 calibration deterioration limits the reliability of direct screening decisions, particularly for Rolex and Cartier: 23.80% of 2026 sales fell at or below the booster q33, against 33.33% expected.
+
+The model predicts recorded auction sale prices in USD. Source verification indicates that buyer's premium treatment may differ across auction records. Therefore, these values should not universally be interpreted as hammer prices. Catalogue-estimate screening results are exploratory and do not establish purchasing profitability.
+
 ## Fork
 
 The repository is public, and so is the fork.

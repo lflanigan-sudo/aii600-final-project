@@ -143,7 +143,7 @@ def gap_table(group, mask, price, benchmark, booster, linear):
 def screening_gaps(frame, predictors, eligible_path):
     print("\nSCREENING GAPS AGAINST THE CATALOGUE RANGE")
     print("A flag is predicted q33 at least 10% above the benchmark. The margin is illustrative.")
-    print("Hammer minus benchmark is computed after the flag. It is not a purchasing profit.")
+    print("Recorded sale price minus benchmark is computed after the flag. It is not a purchasing profit.")
     training = frame.loc[frame["partition"].eq("train")].reset_index(drop=True)
     validation = frame.loc[frame["partition"].eq("validation")].reset_index(drop=True)
     estimates = load_estimates(eligible_path)
@@ -175,8 +175,8 @@ def screening_gaps(frame, predictors, eligible_path):
         )
         rows = [gap_table(label, mask, price, benchmark, booster, linear) for label, mask in groups.items()]
         print_frame(pd.DataFrame(rows))
-    print("booster_error is predicted q33 minus the hammer. Positive means the q33 was above the hammer.")
-    print("A hammer above the catalogue estimate is not evidence that buying the watch would have been profitable.")
+    print("booster_error is predicted q33 minus the recorded sale price. Positive means the q33 was above that price.")
+    print("A recorded sale price above the catalogue estimate is not evidence that buying the watch would have been profitable.")
 
 
 def chosen_interval(frame, predictors):

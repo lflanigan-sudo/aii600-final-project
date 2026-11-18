@@ -2,6 +2,45 @@
 
 This file is the history of the project. Append an entry when a choice changes the work: the quantity, the data, the split, the model, the loss, or the action. Leave old entries in place. A later entry can reverse an earlier one. If a result depends on a random draw, record the seed under Why. The split entry records the cutoff date, or the seed and the fraction. The pull request that merges the code names this entry.
 
+
+## 2026-11-17: Final notebook verification and documentation alignment
+
+**Decision.** Accept the November 17 full notebook execution as the current reproducibility check. Retain the five-feature gradient-boosted quantile regression model, existing chronological split, asymmetric dollar pinball loss, and previously selected hyperparameters. No additional model tuning, feature expansion, or data modification is required for this documentation cleanup.
+
+**Why.** The notebook's 29 nonempty code cells executed sequentially, with execution counts 1–29 and no recorded Python exceptions. The saved outputs agree with the reported 2024 validation results: GBQR dollar pinball loss of $3,168.73 versus $3,975.74 for linear quantile regression, a 20.30% reduction. The IQN and CatBoost comparisons were executed in the notebook and retained their reported results.
+
+The notebook and final documentation distinguish the November 16 standalone diagnostic run from the November 17 full notebook execution. Successful execution in the recorded environment is not an independent reproduction on another machine.
+
+The prediction target remains **recorded auction sale price in USD**, not universally hammer price. The catalogue audit identified premium-inclusive Bonhams prices, while the price basis of all Sotheby's observations has not been independently verified. Catalogue estimates also lack confirmed publication timestamps. Consequently, the screening rule remains exploratory and cannot establish purchasing profitability.
+
+The final recommendation remains GBQR because it achieved the lowest observed 2024 dollar pinball loss. Linear quantile regression remains the interpretable benchmark. The 2026 q33 calibration rate of 23.80%, versus the 33.33% target, and the decline in adjusted prediction-interval coverage from 78.43% in 2024 to 72.65% in 2026 remain material limitations.
+
+**Alternative.** Rebuild the target as hammer price, rerun model selection, introduce brand-specific models, or change the screening threshold. These alternatives were not adopted because the necessary source evidence or independent validation is insufficient, and the current cleanup does not justify reopening the frozen analysis.
+
+**Revisit.** Reconsider the target definition and screening conclusions if verified hammer-price data and pre-auction catalogue records become available for both auction houses. Reconsider the selected model if genuinely new chronological data show that another model has lower asymmetric dollar pinball loss or that brand-specific calibration is more important for the intended screening decision.
+
+**Files affected.** `analysis.ipynb`, `decisions.md`, and any final documentation updated to reflect the verified results. No model settings, input data, or numerical outputs were changed as part of this documentation decision.
+
+## 2026-11-17: Full notebook execution, and the recorded sale price stays the target
+
+**Decision.** Keep the five-feature gradient booster. The November 17 notebook execution does not change the model, the predictors, or the reported losses. Describe the target as the recorded auction sale price in USD. Do not call that target a hammer price except where a source field actually stores a hammer.
+
+**Why.** The notebook's code cells now have execution counts 1 through 29 in order, with no recorded Python exception. The IQN cell is execution 23 and the CatBoost cell is execution 26, so those searches ran inside this notebook execution. Their saved 2024 pinball figures remain $3,207.60 and $3,321.24. The November 16 run of `python -m scripts.closing_diagnostics` was a separate script, not this full notebook execution. The catalogue check still supports the 2026-11-16 finding: on the Bonhams lots that were opened, the recorded amount includes buyer's premium, and Sotheby's public results did not show a sold price. Earlier notebook sections that still name the linear model as the preferred method are intermediate findings. The final recommendation is the booster, because its 2024 dollar pinball of $3,168.73 is the lowest, 20.30% below the linear model's $3,975.74. The 2026 share at or below q33 is 23.80%, against 33.33%, and that limits screening for Rolex and Cartier.
+
+**Alternative.** Rewrite the earlier sections so they read as if the booster had been selected from the first model. That was not done. Those sections are the history of the comparison.
+
+**Revisit.** Revisit the target description if a hammer series is confirmed for both houses. A new fit would be required before the 20.30% figure is quoted on that series.
+
+## 2026-11-16: Catalogue price basis, and the recorded sale price stays the target
+
+**Decision.** Keep `usd_price_decimal_num` as the target and keep the five-feature booster. Do not relabel that target as a hammer price, and do not rescore the project on a reconstructed hammer. The catalogue screen remains an investigation flag. It is not evidence of a profitable purchase, and it is not a verified comparison of two amounts on the same price basis.
+
+**Why.** On all 4,664 eligible rows, `usd_price_decimal_num` equals `sale_price_num` times `usd_currency_rate`, within 1%. The auction house is the lot URL, not `company_name`. Two public Bonhams pages label the matching amount as including premium: auction 26846 lot 66 is "Sold for US$2,040 inc. premium," matching the file, and auction 26682 lot 49 is "Sold for £956.25 inc. premium," against a recorded 956. Bonhams stores no hammer on any of its 2,548 rows. Sotheby's results for the checked 2026 lot (fine-watches-9, lot 66) are behind "Log in to view results." The published estimates on that lot and on the 2021 watches-online-7 lot 51 match the file. Of the 21 Sotheby's rows that store both a hammer and a sale price, the sale is 1.20 times the hammer on one 2024 HKD lot and 1.28 times the hammer on 20 lots from 2026. Four of the 139 booster-only validation flags were opened the same day. Bonhams 29150 lots 129 and 98 are "Sold for £5,376 inc. premium" and "Sold for £16,640 inc. premium," matching the file. The two Sotheby's pages match the recorded estimates and do not show a sold price. Lot 450's recorded sale is below its published low estimate, so a booster-only flag is not a claim that the watch sold above the catalogue range. The file does not record when an estimate was written. `python -m scripts.closing_diagnostics` at commit `585c301`, Python 3.14.7, again matched the 2024 booster pinball of $3,168.73, the 2026 figures of $5,540.14 and 23.80%, and interval coverage of 78.43% in 2024 and 72.65% in 2026. The IQN search, the CatBoost grid, and the feature search were not rerun.
+
+**Alternative.** Rebuild the target by stripping a buyer's premium and refit. That was not done. The premium is verified only on a sample, the rate is not one number, and Sotheby's public results were not available. A rescore would also reopen the model comparison without a confirmed hammer series.
+
+**Revisit.** Revisit if the team obtains the hammer, or a source note that states the price basis, for both houses. If that series is not the recorded sale price, refit before quoting the 20.30% reduction. Revisit the screen if a pre-sale copy of the catalogue shows the estimate was not available before bidding.
+
 ## 2026-11-15: 2026 calibration, the screening gaps, and one interval
 
 **Decision.** Keep the five-feature gradient booster as the predictive model and the linear q33 model as the interpretable reference. Do not switch models to repair the 2026 calibration. Report one interval: q10 and q90 fit on sales before 2023, with the 650.96 dollar cutoff read from 2023 and applied unchanged to later years. Keep the catalogue screen as a proposed investigation rule. A hammer above the estimate is not a profitable purchase.
